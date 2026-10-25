@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "scope": "SYNTHETIC_ARTIFACT_TIMESTAMP_ONLY",
+  "status": "UNAVAILABLE",
+  "financial_authorization": "NOT_GRANTED",
+  "endpoint": "https://freetsa.org/tsr",
+  "tsa_policy_oid": "1.2.3.4.1",
+  "clock_skew_seconds": 120,
+  "ca_bundle": "",
+  "tsa_verification": {}
+}

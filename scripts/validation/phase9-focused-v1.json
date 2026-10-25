@@ -1,0 +1,1502 @@
+{
+  "version": 1,
+  "id": "phase9-focused-v1",
+  "requirements": [
+    "target-isolation",
+    "signer-watcher-separation",
+    "fresh-orchard-issuance",
+    "exact-zip321",
+    "canonical-output-matching",
+    "three-confirmations",
+    "integer-stake",
+    "replay-prevention",
+    "reorg-safety-hold",
+    "schema-privileges",
+    "admin-public-isolation",
+    "vault-bearer-backup"
+  ],
+  "stages": [
+    {
+      "id": "build-rust",
+      "kind": "build",
+      "command": [
+        "cargo",
+        "build",
+        "--workspace",
+        "--bins",
+        "--examples",
+        "--locked",
+        "--offline"
+      ],
+      "depends_on": [],
+      "expected_tests": [],
+      "requirements": ["fresh-orchard-issuance"],
+      "expected_assertions": [
+        "Locked offline maintained-wallet binary and fixture examples compile; no tests are executed."
+      ],
+      "reason": "Payment-critical existing coverage: Locked offline maintained-wallet binary and fixture examples compile; no tests are executed.",
+      "environment": "TEST_ONLY",
+      "source_file": "Cargo.lock"
+    },
+    {
+      "id": "build-web",
+      "kind": "build",
+      "command": ["npm.cmd", "run", "build:web"],
+      "depends_on": ["build-rust"],
+      "expected_tests": [],
+      "requirements": ["vault-bearer-backup"],
+      "expected_assertions": [
+        "Fresh browser/protocol assets compile; tests must not exercise stale dist files."
+      ],
+      "reason": "Payment-critical existing coverage: Fresh browser/protocol assets compile; tests must not exercise stale dist files.",
+      "environment": "TEST_ONLY",
+      "source_file": "package.json"
+    },
+    {
+      "id": "protocol-types",
+      "kind": "build",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "packages/protocol/tsconfig.types.json"
+      ],
+      "depends_on": ["build-web"],
+      "expected_tests": [],
+      "requirements": ["integer-stake"],
+      "expected_assertions": [
+        "Existing protocol declaration/type checks compile without emission."
+      ],
+      "reason": "Payment-critical existing coverage: Existing protocol declaration/type checks compile without emission.",
+      "environment": "TEST_ONLY",
+      "source_file": "packages/protocol/tsconfig.types.json"
+    },
+    {
+      "id": "node-db-test-environment",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/environment.test.mjs"
+      ],
+      "depends_on": ["protocol-types"],
+      "expected_tests": [
+        "TEST positive identity and fixture targets are admitted",
+        "HISTORICAL kind, port, path and database are independently rejected",
+        "LIVE kind, port, path and database are independently rejected by TEST",
+        "missing acknowledgement, marker kind and unexpected targets fail closed",
+        "destructive fixture names reject retained and LIVE databases/roles",
+        "actual-server system ID, path, port and marker mismatches reject",
+        "local profile/control/marker identities checked without SQL",
+        "query clients reject HISTORICAL before spawning psql"
+      ],
+      "requirements": ["target-isolation"],
+      "expected_assertions": [
+        "TEST acknowledgement, local/server identity and generated fixture-name guards reject retained targets."
+      ],
+      "reason": "Payment-critical existing coverage: TEST acknowledgement, local/server identity and generated fixture-name guards reject retained targets.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/environment.test.mjs"
+    },
+    {
+      "id": "node-db-test-target-registry",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/target-registry.test.mjs"
+      ],
+      "depends_on": ["node-db-test-environment"],
+      "expected_tests": [
+        "registry freezes the exact v1 mapping and legacy identity",
+        "registry freezes exact v2 identities with disjoint paths ports databases and roles",
+        "unknown malformed absent and non-string LIVE instances fail closed",
+        "HISTORICAL and TEST with a LIVE selector fail closed",
+        "target rejection: v1 path with v2 identity",
+        "target rejection: v2 path with v1 identity",
+        "target rejection: v1 port with v2 identity",
+        "target rejection: wrong canonical database",
+        "target rejection: wrong credential identity",
+        "target rejection: cross-instance password file",
+        "target rejection: missing v2 marker instance",
+        "target rejection: reused old LIVE system ID",
+        "target rejection: reused TEST system ID",
+        "target rejection: reused old marker UUID",
+        "target rejection: reused TEST marker UUID",
+        "synthetic approved v2 profile control and marker validate without any SQL",
+        "legacy v1 profile remains recognizable using explicit instance and unchanged marker bytes",
+        "v2 wrong marker and actual control system ID reject before any SQL",
+        "TEST destructive clients reject both approved LIVE instances and names",
+        "HISTORICAL and TEST evidence capture reject preserved target paths before writes",
+        "unknown environment knobs cannot override reviewed registry properties",
+        "admin issuer and watcher agree on a single approved v2 role and reject v1 credentials",
+        "v2 credential identities cannot authenticate the preserved v1 target",
+        "evidence child cannot switch the parent's instance database port or wallet",
+        "issuer v2 sends its instance binding so a legacy v1 allocation transport cannot accept it",
+        "issuer allocator watcher and signer paths cannot resolve the v1 wallet or another purpose",
+        "reviewed signer and view-import invocations reject v1 arguments before execution",
+        "preserved mutation and cross-instance provisioning fail before SQL",
+        "nonempty tablespaces are rejected before any SQL",
+        "v1 bootstrap write commands reject before any SQL or file creation",
+        "initializer rejects credential signer and watcher collisions without creating a cluster",
+        "new LIVE evidence capture rejects v1 paths and sibling-prefix traversal",
+        "public reader binds synthetic v2 once and rejects a v1 credential or database",
+        "public recursive boundary cannot import target-management APIs or accept target arguments",
+        "public HTTP cannot select an instance or database through request parameters",
+        "initializer v2 dry-run resolves exact reviewed values without creating resources",
+        "actual PowerShell v2 plan defaults to no execution and creates no resources",
+        "initializer rejects a preserved v1 identity before creating anything",
+        "component launcher plans v2 without loading or creating credentials",
+        "initializer TEST preflight rejects existing roots and occupied TEST port before writes"
+      ],
+      "requirements": [
+        "target-isolation",
+        "signer-watcher-separation",
+        "admin-public-isolation"
+      ],
+      "expected_assertions": [
+        "Exact V1/V2 registry rejects crossed paths, ports, credentials, roles, marker/control IDs, signer/watcher and allocator frames. Plan/initializer collision guards create no actual V2; public target is immutable."
+      ],
+      "reason": "Payment-critical existing coverage: Exact V1/V2 registry rejects crossed paths, ports, credentials, roles, marker/control IDs, signer/watcher and allocator frames. Plan/initializer collision guards create no actual V2; public target is immutable.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/target-registry.test.mjs"
+    },
+    {
+      "id": "node-db-test-public-reader-runtime",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/public-reader-runtime.test.mjs"
+      ],
+      "depends_on": ["node-db-test-target-registry"],
+      "expected_tests": [
+        "reader target captures endpoint/database/role/credential/client once; no retained mutable configuration",
+        "wrong local marker and control system ID fail closed before DB access",
+        "a self-consistent replacement identity cannot retarget an already-bound reader",
+        "wrong kind/path/port/host and maintenance databases rejected by reader binding",
+        "reader password file is bound once to one credential; later file changes cannot change it"
+      ],
+      "requirements": ["target-isolation", "admin-public-isolation"],
+      "expected_assertions": [
+        "Reader binds credentials and target once; mismatched marker/control/replacement identity and privileged target reject."
+      ],
+      "reason": "Payment-critical existing coverage: Reader binds credentials and target once; mismatched marker/control/replacement identity and privileged target reject.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/public-reader-runtime.test.mjs"
+    },
+    {
+      "id": "node-db-test-initializer",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/initializer.test.mjs"
+      ],
+      "depends_on": ["node-db-test-public-reader-runtime"],
+      "expected_tests": [
+        "initializer drains both streams while a child runs",
+        "initializer propagates nonzero child exit",
+        "initializer has closed noninteractive stdin by default",
+        "initializer query input is written then closed",
+        "initializer terminates an unending child at its deadline",
+        "initializer fails closed on spawn failure and invalid timeouts",
+        "initializer bounds unexpected child output",
+        "retained descendant pipe cannot keep the initializer waiting",
+        "initializer CLI returns a failing stage's exit code",
+        "initializer CLI returns timeout status without asking for input"
+      ],
+      "requirements": ["target-isolation"],
+      "expected_assertions": [
+        "Synthetic process capture drains streams and preserves exit, stdin, timeout and missing-output failures without actual cluster initialization."
+      ],
+      "reason": "Payment-critical existing coverage: Synthetic process capture drains streams and preserves exit, stdin, timeout and missing-output failures without actual cluster initialization.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/initializer.test.mjs"
+    },
+    {
+      "id": "node-db-test-server-start",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/server-start.test.mjs"
+      ],
+      "depends_on": ["node-db-test-initializer"],
+      "expected_tests": [
+        "pg_ctl completion exit 0 remains stage success",
+        "native exit 1 remains failure, including a child that became ready",
+        "unready launcher cannot succeed and a hanging launcher times out as 124",
+        "ready descendant retaining streams does not overwrite successful native exit",
+        "on-time native completion cannot become a later timeout during bounded drain",
+        "PowerShell captures LASTEXITCODE before later harmless commands overwrite it",
+        "stderr diagnostics with native exit 0 do not fail Node or PowerShell stage",
+        "stdout/stderr saturation is bounded and cannot deadlock the daemon-launch policy",
+        "daemon-launch policy preserves closed stdin and finite input closure",
+        "malformed or unobserved completion evidence fails closed",
+        "actual PowerShell stage and enclosing supervisor both complete with retained fixture pipes"
+      ],
+      "requirements": ["target-isolation"],
+      "expected_assertions": [
+        "Synthetic server-start child/pipe lifecycle retains native outcome; no PostgreSQL or pg_ctl invocation."
+      ],
+      "reason": "Payment-critical existing coverage: Synthetic server-start child/pipe lifecycle retains native outcome; no PostgreSQL or pg_ctl invocation.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/server-start.test.mjs"
+    },
+    {
+      "id": "node-db-test-evidence-wrapper",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/evidence-wrapper.test.mjs"
+      ],
+      "depends_on": ["node-db-test-server-start"],
+      "expected_tests": [
+        "original redirected PowerShell wrapper promotes ordinary stderr to an error",
+        "stdout only and exit0 retains separate valid evidence",
+        "stderr plus exit0 succeeds and preserves stderr",
+        "stdout and stderr plus exit0 passes required result validation",
+        "success-looking stdout cannot turn native exit1 into success",
+        "stderr and native exit1 remains failure",
+        "timeout remains failure with native termination identity retained",
+        "large concurrent streams drain without deadlock and overflow fails bounded",
+        "stdin is closed by default and finite supplied input also reaches EOF",
+        "missing or malformed required evidence fails despite native exit0",
+        "console and result metadata omit secrets while private raw streams remain retained",
+        "corrected outer PowerShell accepts stderr exit0 and captures exit before later commands",
+        "CLI required JSON and exclusive evidence directory fail closed"
+      ],
+      "requirements": ["target-isolation"],
+      "expected_assertions": [
+        "Exclusive bounded stdout/stderr/exit captures never promote nonzero exits or missing required evidence to success."
+      ],
+      "reason": "Payment-critical existing coverage: Exclusive bounded stdout/stderr/exit captures never promote nonzero exits or missing required evidence to success.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/evidence-wrapper.test.mjs"
+    },
+    {
+      "id": "rust-01",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "issuance::tests::",
+        "--",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["node-db-test-evidence-wrapper"],
+      "expected_tests": [
+        "issuance::tests::journal_recovery_freshness_and_atomic_failure"
+      ],
+      "requirements": ["fresh-orchard-issuance", "replay-prevention"],
+      "expected_assertions": [
+        "Fresh allocation/journal survives recovery and injected atomic rollback."
+      ],
+      "reason": "Payment-critical existing coverage: Fresh allocation/journal survives recovery and injected atomic rollback.",
+      "environment": "TEST_ONLY",
+      "source_file": "issuance::tests::"
+    },
+    {
+      "id": "rust-02",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "live_target::tests::",
+        "--",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-01"],
+      "expected_tests": [
+        "live_target::tests::approved_v2_watcher_and_signer_are_distinct_without_creating_resources",
+        "live_target::tests::destructive_test_and_historical_cannot_select_live_wallets",
+        "live_target::tests::wallet_bindings_reject_unknown_preserved_and_cross_instance_paths"
+      ],
+      "requirements": ["target-isolation", "signer-watcher-separation"],
+      "expected_assertions": [
+        "Closed signer/watcher paths reject unknown, preserved, crossed and TEST/HISTORICAL live targets."
+      ],
+      "reason": "Payment-critical existing coverage: Closed signer/watcher paths reject unknown, preserved, crossed and TEST/HISTORICAL live targets.",
+      "environment": "TEST_ONLY",
+      "source_file": "live_target::tests::"
+    },
+    {
+      "id": "rust-03",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "payment_request::tests::",
+        "--",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-02"],
+      "expected_tests": [
+        "payment_request::tests::bounded_pipe_rejects_invalid_utf8_extra_and_truncated_input",
+        "payment_request::tests::exact_literals_and_round_trips",
+        "payment_request::tests::full_network_receiver_and_canonical_validation"
+      ],
+      "requirements": ["exact-zip321"],
+      "expected_assertions": [
+        "Exact ZIP-321 literals, canonical testnet Orchard UA and bounded pipes reject invalid inputs."
+      ],
+      "reason": "Payment-critical existing coverage: Exact ZIP-321 literals, canonical testnet Orchard UA and bounded pipes reject invalid inputs.",
+      "environment": "TEST_ONLY",
+      "source_file": "payment_request::tests::"
+    },
+    {
+      "id": "rust-04",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "tests::orchard_allocation_survives_reopen",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-03"],
+      "expected_tests": ["tests::orchard_allocation_survives_reopen"],
+      "requirements": ["fresh-orchard-issuance"],
+      "expected_assertions": [
+        "Maintained fresh Orchard receiver survives wallet reopen."
+      ],
+      "reason": "Payment-critical existing coverage: Maintained fresh Orchard receiver survives wallet reopen.",
+      "environment": "TEST_ONLY",
+      "source_file": "tests::orchard_allocation_survives_reopen"
+    },
+    {
+      "id": "rust-05",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "tests::zip321_preserves_exact_amount_and_orchard_receiver",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-04"],
+      "expected_tests": [
+        "tests::zip321_preserves_exact_amount_and_orchard_receiver"
+      ],
+      "requirements": ["exact-zip321"],
+      "expected_assertions": [
+        "Maintained ZIP-321 preserves exact recipient amount and Orchard receiver."
+      ],
+      "reason": "Payment-critical existing coverage: Maintained ZIP-321 preserves exact recipient amount and Orchard receiver.",
+      "environment": "TEST_ONLY",
+      "source_file": "tests::zip321_preserves_exact_amount_and_orchard_receiver"
+    },
+    {
+      "id": "rust-06",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "watcher::tests::",
+        "--",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-05"],
+      "expected_tests": [
+        "watcher::tests::byte_encodings_are_explicit",
+        "watcher::tests::exclusive_kernel_lock_releases_on_handle_drop",
+        "watcher::tests::frames_are_bounded_and_do_not_use_logs",
+        "watcher::tests::maintained_ironwood_receiver_scan_restart_and_reorg",
+        "watcher::tests::missing_wallet_never_recreated",
+        "watcher::tests::tls_construction_in_fresh_process"
+      ],
+      "requirements": [
+        "canonical-output-matching",
+        "reorg-safety-hold",
+        "signer-watcher-separation"
+      ],
+      "expected_assertions": [
+        "Actual maintained encrypted-Ironwood scan/restart/reorg matches actual receiver; missing wallets cannot be recreated; TLS/provider, exclusive lock and frame guards hold."
+      ],
+      "reason": "Payment-critical existing coverage: Actual maintained encrypted-Ironwood scan/restart/reorg matches actual receiver; missing wallets cannot be recreated; TLS/provider, exclusive lock and frame guards hold.",
+      "environment": "TEST_ONLY",
+      "source_file": "watcher::tests::"
+    },
+    {
+      "id": "rust-07",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "watcher::close::tests::",
+        "--",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-06"],
+      "expected_tests": [
+        "watcher::close::tests::bounded_discovery_first_middle_final_none_equality_fractional",
+        "watcher::close::tests::bounded_discovery_legal_backstep_plateau_and_bad_prefix",
+        "watcher::close::tests::bounded_inclusion_rejects_wrong_action_index_and_transparent_pool",
+        "watcher::close::tests::bounded_metadata_rejects_missing_or_malformed_timestamp"
+      ],
+      "requirements": ["canonical-output-matching", "three-confirmations"],
+      "expected_assertions": [
+        "Bounded MTP close and actual inclusion indices reject invalid/missing metadata, wrong pool/action, equality/fractional boundary faults."
+      ],
+      "reason": "Payment-critical existing coverage: Bounded MTP close and actual inclusion indices reject invalid/missing metadata, wrong pool/action, equality/fractional boundary faults.",
+      "environment": "TEST_ONLY",
+      "source_file": "watcher::close::tests::"
+    },
+    {
+      "id": "rust-08",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "watcher::sync_tests::",
+        "--",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-07"],
+      "expected_tests": [
+        "watcher::sync_tests::block_guard_phase_is_explicit_for_initial_checkpoint_and_outputs",
+        "watcher::sync_tests::bounded_close_large_no_payment_and_export_frame_fixture",
+        "watcher::sync_tests::bounded_close_missing_seed_recovery_and_conflicting_incomplete_witnesses",
+        "watcher::sync_tests::bounded_close_unmapped_external_note_keeps_complete_inclusion",
+        "watcher::sync_tests::delete_preserves_full_subset_absent_idempotent_and_boundary_semantics",
+        "watcher::sync_tests::diagnostic_classes_use_codes_and_never_arbitrary_error_text",
+        "watcher::sync_tests::explicit_clock_receipts_and_unassigned_guards_ignore_stale_stage",
+        "watcher::sync_tests::immediate_delete_preserves_mutex_error_in_ready_future",
+        "watcher::sync_tests::maintained_sync_16800_headroom_has_same_residency",
+        "watcher::sync_tests::maintained_sync_8400_completes_with_bounded_residency",
+        "watcher::sync_tests::maintained_sync_four_batches_delete_at_call_time",
+        "watcher::sync_tests::malformed_protobuf_transport_is_classified_without_retaining_payload",
+        "watcher::sync_tests::production_advanced_canonical_h_hash_shape",
+        "watcher::sync_tests::production_advanced_canonical_h_height",
+        "watcher::sync_tests::production_advanced_canonical_h_prev_hash_shape",
+        "watcher::sync_tests::production_advanced_tip_h_reorg",
+        "watcher::sync_tests::production_complete_check_mismatch_prevents_final_recheck",
+        "watcher::sync_tests::production_equal_height_hash_change",
+        "watcher::sync_tests::production_final_advertised_hash_mismatch",
+        "watcher::sync_tests::production_final_tip_behind",
+        "watcher::sync_tests::production_forward_tip_h_plus_10000_passes_without_successor_scan",
+        "watcher::sync_tests::production_forward_tip_h_plus_one_passes",
+        "watcher::sync_tests::production_forward_tip_h_plus_two_passes",
+        "watcher::sync_tests::production_output_helper_hash_and_input_guards",
+        "watcher::sync_tests::production_output_index_absent",
+        "watcher::sync_tests::production_output_txid_mismatch",
+        "watcher::sync_tests::production_postscan_block_hash_shape",
+        "watcher::sync_tests::production_postscan_block_height",
+        "watcher::sync_tests::production_postscan_prev_hash_shape",
+        "watcher::sync_tests::production_snapshot_stable_tip_after_8400_block_catchup",
+        "watcher::sync_tests::progress_enabled_disabled_real_wallet_semantic_equivalence",
+        "watcher::sync_tests::progress_full_snapshot_encrypted_note_and_final_tip_equivalence",
+        "watcher::sync_tests::progress_os_child_writer_fixture",
+        "watcher::sync_tests::progress_real_empty_short_complete_and_pending",
+        "watcher::sync_tests::progress_real_tree_success_pending_and_failure",
+        "watcher::sync_tests::progress_real_verify_then_multiple_units_and_later_stall",
+        "watcher::sync_tests::realistic_compact_shape_crosses_encoded_byte_bound",
+        "watcher::sync_tests::resident_block_limit_still_rejects_8193_without_deletion",
+        "watcher::sync_tests::tonic_default_message_boundary_is_preserved_and_classified",
+        "watcher::sync_tests::typed_failures_clear_prior_guard_and_preserve_codes",
+        "watcher::sync_tests::unpolled_delete_removes_only_requested_blocks_and_accounts_immediately"
+      ],
+      "requirements": [
+        "canonical-output-matching",
+        "reorg-safety-hold",
+        "three-confirmations"
+      ],
+      "expected_assertions": [
+        "Actual maintained synthetic sync/cache bounds, original-H/final-tip/output inclusion and bounded proof guards; passive progress preserves real-wallet semantics."
+      ],
+      "reason": "Payment-critical existing coverage: Actual maintained synthetic sync/cache bounds, original-H/final-tip/output inclusion and bounded proof guards; passive progress preserves real-wallet semantics.",
+      "environment": "TEST_ONLY",
+      "source_file": "watcher::sync_tests::"
+    },
+    {
+      "id": "rust-09",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "watcher::progress::tests::",
+        "--",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-08"],
+      "expected_tests": [
+        "watcher::progress::tests::progress_body_forwarding_frames_trailers_errors_and_poll_count",
+        "watcher::progress::tests::progress_body_pending_is_not_eof_or_complete",
+        "watcher::progress::tests::progress_fragmented_coalesced_envelopes_and_saturation"
+      ],
+      "requirements": ["canonical-output-matching"],
+      "expected_assertions": [
+        "Observer forwards real frames/trailers/errors and never treats pending as complete."
+      ],
+      "reason": "Payment-critical existing coverage: Observer forwards real frames/trailers/errors and never treats pending as complete.",
+      "environment": "TEST_ONLY",
+      "source_file": "watcher::progress::tests::"
+    },
+    {
+      "id": "rust-10",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "watcher::connect::tests::verified_local_tls_h2_success_reports_only_ok_and_sends_no_rpc",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-09"],
+      "expected_tests": [
+        "watcher::connect::tests::verified_local_tls_h2_success_reports_only_ok_and_sends_no_rpc"
+      ],
+      "requirements": ["signer-watcher-separation"],
+      "expected_assertions": [
+        "Trusted local TLS/HTTP2 succeeds without RPC; no real payment."
+      ],
+      "reason": "Payment-critical existing coverage: Trusted local TLS/HTTP2 succeeds without RPC; no real payment.",
+      "environment": "TEST_ONLY",
+      "source_file": "watcher::connect::tests::verified_local_tls_h2_success_reports_only_ok_and_sends_no_rpc"
+    },
+    {
+      "id": "rust-11",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "watcher::connect::tests::fixture_still_verifies_hostname",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-10"],
+      "expected_tests": [
+        "watcher::connect::tests::fixture_still_verifies_hostname"
+      ],
+      "requirements": ["signer-watcher-separation"],
+      "expected_assertions": [
+        "Wrong TLS hostname rejects without certificate bypass."
+      ],
+      "reason": "Payment-critical existing coverage: Wrong TLS hostname rejects without certificate bypass.",
+      "environment": "TEST_ONLY",
+      "source_file": "watcher::connect::tests::fixture_still_verifies_hostname"
+    },
+    {
+      "id": "rust-12",
+      "kind": "rust-libtest",
+      "command": [
+        "cargo",
+        "test",
+        "-p",
+        "darkpool-zcash",
+        "--lib",
+        "--locked",
+        "--offline",
+        "watcher::connect::tests::production_factory_does_not_trust_public_test_ca",
+        "--",
+        "--exact",
+        "--test-threads=1",
+        "--format=pretty",
+        "--color=never"
+      ],
+      "depends_on": ["rust-11"],
+      "expected_tests": [
+        "watcher::connect::tests::production_factory_does_not_trust_public_test_ca"
+      ],
+      "requirements": ["signer-watcher-separation"],
+      "expected_assertions": [
+        "Production factory does not trust public fixture CA."
+      ],
+      "reason": "Payment-critical existing coverage: Production factory does not trust public fixture CA.",
+      "environment": "TEST_ONLY",
+      "source_file": "watcher::connect::tests::production_factory_does_not_trust_public_test_ca"
+    },
+    {
+      "id": "node-services-watcher-test-watcher",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "services/watcher/test/watcher.test.mjs"
+      ],
+      "depends_on": ["rust-12"],
+      "expected_tests": [
+        "Progress: closed schema excludes private fields and saturates counters",
+        "Progress: protected atomic updates reject corrupt and oversized prior records",
+        "Progress: symlink replacement is rejected and its destination remains unchanged",
+        "Progress: IPC coalesces updates without resolving sync or changing its deadline",
+        "Progress: real Rust pending DOWNLOAD and TREE_STATE survive child termination",
+        "Progress: update interruption retains a complete bounded current record",
+        "Progress: frames without protected activation are rejected",
+        "Pure: stable output identity distinguishes pools/indices and frame bounds",
+        "Pure: accepted contradiction includes same-height hash, shorter depth and receiver evidence",
+        "Security: wallet child receives no PostgreSQL, seed, signer or claim credentials",
+        "Security: runtime rejects mainnet, inherited maintenance knobs and product development DB",
+        "Recovery fixture: unretained observation acknowledgement precedes destructive sync",
+        "Recovery fixture: explicit controlled rescan still acknowledges unretained notes first",
+        "Recovery fixture: preflight database failure never invokes destructive sync",
+        "Recovery fixture: wallet/read and sync failures create no acceptance",
+        "Recovery fixture: ambiguous commit retries the exact same immutable request",
+        "Recovery fixture: pending safety stop survives DB outage and is replayed before next sync",
+        "Recovery fixture: postaccept contradiction stores stop before PostgreSQL outage",
+        "Recovery fixture: corrupt stop marker and stale/incomplete snapshot fail closed",
+        "Real child process: missing wallet and CLI failures expose only sanitized diagnostics",
+        "Real child process: invalid HTTPS URI fails offline with a sanitized sync frame",
+        "Diagnostics accept only bounded enums/numbers and drop all arbitrary strings",
+        "Closed guard and phase fields survive private child IPC and reject arbitrary values",
+        "Actual child: valid failure frame preserves natural Windows exit code and private class",
+        "Actual child: exit 101 before a response frame remains distinguishable",
+        "Actual child: truncated frame records IPC_FRAME and natural exit",
+        "Actual child: malformed JSON frame is killed with bounded IPC evidence",
+        "Actual child: oversized frame header is rejected before allocating its body",
+        "Actual child: signal termination preserves the OS close signal",
+        "Actual child: hung sync is killed exactly at the fixed 1800000ms deadline",
+        "Actual child: sync can finish after 300s but before 30min and cancels its timer",
+        "Actual child: observation still expires exactly at the shorter 10000ms deadline",
+        "Actual child: hanging sync failure frame retains its stage until the 30min timeout",
+        "Actual child: a closed stdin is classified as IPC failure",
+        "Actual child: unexpected exit between requests preserves its code",
+        "Actual child: a hanging failure frame keeps the unchanged observation deadline",
+        "Protected diagnostic path refuses a repository path and a broad Windows DACL",
+        "Protected Windows evidence file persists only sanitized metadata and refuses overwrite"
+      ],
+      "requirements": [
+        "canonical-output-matching",
+        "replay-prevention",
+        "reorg-safety-hold",
+        "signer-watcher-separation"
+      ],
+      "expected_assertions": [
+        "Observation acknowledgement precedes destructive sync; immutable retry and durable holds survive DB outage. Fresh complete framed snapshots and private child credential separation."
+      ],
+      "reason": "Payment-critical existing coverage: Observation acknowledgement precedes destructive sync; immutable retry and durable holds survive DB outage. Fresh complete framed snapshots and private child credential separation.",
+      "environment": "TEST_ONLY",
+      "source_file": "services/watcher/test/watcher.test.mjs"
+    },
+    {
+      "id": "node-db-test-watcher",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/watcher.test.mjs"
+      ],
+      "depends_on": ["node-services-watcher-test-watcher"],
+      "expected_tests": [
+        "Bounded close: V1/V2 economic equivalence before/equal/after, confirmations and deterministic selection",
+        "Bounded close: first feasible/middle/H/no-crossing, equality and fractional close",
+        "Bounded close: closed proof rejects bad versions, missing/gapped/reordered/conflicting/forged evidence",
+        "Bounded close: legal raw timestamp backstep is not a median-time violation",
+        "Bounded close: pre-acceptance boundary recomputes; accepted boundary contradiction holds without rewrite",
+        "Bounded close: output contradiction holds, UNMAPPED/Sapling remain non-economic, private checker denied",
+        "Bounded close: real 30,000-block Rust no-payment frame crosses Node and restricted SQL",
+        "DB01 exact one-output acceptance atomically records group, membership, evidence and audit, independent YES/NO",
+        "DB policy: underpayment",
+        "DB policy: overpayment entire principal",
+        "DB policy: two partials never aggregate",
+        "DB05 deterministic height/transaction/pool/output ordering ignores arrival; all other principal stays separate",
+        "DB confirmations: 1",
+        "DB confirmations: 2",
+        "DB confirmations: 3",
+        "DB close: timestamp equality is late",
+        "DB close: after close is late",
+        "DB close: timely payment accepts after actual wall clock close",
+        "DB MTP: first preceding-11 crossing persists minimal boundary, equality closes; nonmonotonic and gaps reject",
+        "DB duplicate observation/scan/request retain one stake; conflicting same request fails",
+        "DB preaccept reorg retains principal, removes qualification; re-mining may qualify",
+        "DB changed mapping before acceptance cannot reuse a stale qualifying candidate",
+        "DB PAUSED retains, synchronizes, classifies without accepting; frozen ledger blocks acceptance",
+        "DB unmapped, wrong receiver, internal, change and Sapling output never guessed by amount",
+        "DB postaccept contradiction preserves accepted history; sticky hold forbids replacement and progression",
+        "DB missing/null/forged frame fields and incomplete inclusion fail without writes",
+        "DB private capabilities deny tables, helpers, issuance, admin, public reader watcher access and overprivileged role",
+        "DB injected write failure rolls back receipt/group/ticket/audit/evidence/revision and exact retry recovers",
+        "DB real login concurrency, stale revision, restart and ambiguous commit retry"
+      ],
+      "requirements": [
+        "canonical-output-matching",
+        "three-confirmations",
+        "integer-stake",
+        "replay-prevention",
+        "reorg-safety-hold",
+        "schema-privileges"
+      ],
+      "expected_assertions": [
+        "Actual TEST PostgreSQL accepts only one exact canonical output at H>=h+2; c=1/2 reject and c=3 accepts. Deterministic note-level identity/order, integer singleton stake/audit, duplicate/concurrent replay, nonaggregation, close equality, reorg and sticky hold remain safe. Synthetic real-wallet-to-Node-to-SQL bounded-proof evidence is distinct from live payment."
+      ],
+      "reason": "Payment-critical existing coverage: Actual TEST PostgreSQL accepts only one exact canonical output at H>=h+2; c=1/2 reject and c=3 accepts. Deterministic note-level identity/order, integer singleton stake/audit, duplicate/concurrent replay, nonaggregation, close equality, reorg and sticky hold remain safe. Synthetic real-wallet-to-Node-to-SQL bounded-proof evidence is distinct from live payment.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/watcher.test.mjs"
+    },
+    {
+      "id": "node-db-test-schema",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "db/test/schema.test.mjs"
+      ],
+      "depends_on": ["node-db-test-watcher"],
+      "expected_tests": [
+        "INT01: failed DDL rolls back schema and journal; clean apply, concurrent reapply, checksums",
+        "integer-zatoshi constraints: exact wide integers, no fractional coercion/nonfinite/negative money",
+        "independent bearer records: approved commitment bytes, exact IDs, fresh scoped receivers and market binding",
+        "PAY02/V11 database portion: note identity, aliases, receiver matching, unknown receipts, group isolation",
+        "policy choices stay UNPINNED/null; opened configurations and profile references cannot mutate",
+        "ledger database portion: confirmed snapshot, freeze, persisted blindings and immutable root",
+        "CLAIM03/04/06/08 DB portion: reservation, retry retention, idempotency, refund crossover, bound destinations",
+        "exception principal stays separate; unresolved amount/eligibility blocks reservation",
+        "settlement DB portion: market/root/resolution/output binding and authorization immutability",
+        "SEC01/03/04 schema portion: public allowlist, denied private reads, no identity/secrets/payload, append-only audit",
+        "V18/CLAIM03 DB concurrency: separate processes race payout/refund and same/different keys; one durable reservation",
+        "CLAIM03 DB concurrency: competing UNCLAIMED-to-RESERVED updates commit once",
+        "V11 DB concurrency: eight aliased replays retain one distinct note"
+      ],
+      "requirements": [
+        "schema-privileges",
+        "integer-stake",
+        "replay-prevention"
+      ],
+      "expected_assertions": [
+        "Migration checksums/atomic apply, exact wide integer constraints, bearer mappings, unique receipts and acceptance/claim/refund schema boundaries hold."
+      ],
+      "reason": "Payment-critical existing coverage: Migration checksums/atomic apply, exact wide integer constraints, bearer mappings, unique receipts and acceptance/claim/refund schema boundaries hold.",
+      "environment": "TEST_ONLY",
+      "source_file": "db/test/schema.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-admin",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/admin.test.mjs"
+      ],
+      "depends_on": ["node-db-test-schema"],
+      "expected_tests": [
+        "Phase 9 OPEN: fresh 0001-0007 database -> normal create/validate/OPEN CLI; no tickets or payouts",
+        "Phase 9 OPEN: same-key replay, changed retry, stale revision and non-DRAFT fail closed",
+        "Phase 9 OPEN: concurrent different keys serialize one transition; same-key replay audits once",
+        "Phase 9 OPEN: expired window, missing watcher binding, hold and unsupported labels reject without writes",
+        "Phase 9 OPEN: only zero-fee label is accepted; nonzero, unknown, missing and malformed fee reject",
+        "Phase 9 OPEN: explicit payout deferral required; numeric or fake reviewed payout never implies readiness",
+        "Phase 9 OPEN: invalid identity/binary/window and incomplete explicit profiles fail before draft writes",
+        "Phase 9 OPEN: injected audit failure rolls back transition, revision and replay record",
+        "SEC07/12 Phase 4: internal environment, bounded input and owner credentials fail closed",
+        "U07/SM02 Phase 4: invalid draft configuration fails via direct admin DB entrypoint",
+        "Phase 4: concurrent create enforces one market; identical retry audits once and changed retry rejects",
+        "SM02/07 Phase 4: draft revisions serialize edits; rollback, replay and append-only audit",
+        "SM01/04/05/06: unsupported lifecycle operations stay blocked; labels alone cannot OPEN",
+        "SM02 Phase 4: every economic field is frozen after OPEN through admin and existing DB guards",
+        "SEC01/03/04/07/12 Phase 4: actual restricted CLI, private records, direct bypass and sanitized failure",
+        "Phase 4: inherited multi-market storage fails closed without silently selecting a market"
+      ],
+      "requirements": [
+        "admin-public-isolation",
+        "schema-privileges",
+        "three-confirmations"
+      ],
+      "expected_assertions": [
+        "Restricted ordinary DRAFT/OPEN binds exact Phase 9 profiles, revision/idempotency, three deposit confirmations; unsupported later lifecycle stays blocked."
+      ],
+      "reason": "Payment-critical existing coverage: Restricted ordinary DRAFT/OPEN binds exact Phase 9 profiles, revision/idempotency, three deposit confirmations; unsupported later lifecycle stays blocked.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/admin.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-issuance",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/issuance.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-admin"],
+      "expected_tests": [
+        "Phase 7 strict commitment-only inputs, authenticated role and public mapping denial",
+        "Generic HTTP operation, origin/body guards, private response allowlist and sanitized failures",
+        "Reservation concurrency, independent server IDs, immutable-input conflict and hash-only SQL",
+        "Real allocator: 101 issued tickets have fresh private mappings and retries never allocate again",
+        "REC01: crash/lost wallet reply, failed product finish and lost successful HTTP response recover same allocation",
+        "Browser original secret, pending persistence, failed finalization and network/privacy boundary",
+        "Phase 8 formats a real issued destination without changing payment state, wallet allocation or schema privileges",
+        "PAY10: pause and inconsistent multi-market state fail closed; deferred deadline rolls back",
+        "Actual UTC close: issued recovery succeeds, new issuance fails, finish crossing close rolls back",
+        "Actual issuance process logs startup only, with no request or private diagnostic logging"
+      ],
+      "requirements": [
+        "fresh-orchard-issuance",
+        "replay-prevention",
+        "schema-privileges",
+        "signer-watcher-separation"
+      ],
+      "expected_assertions": [
+        "Actual restricted TEST issuance and maintained allocator preserve one fresh scoped receiver, durable journal, original secret/ID/commitment, close races, recovery and privilege denial."
+      ],
+      "reason": "Payment-critical existing coverage: Actual restricted TEST issuance and maintained allocator preserve one fresh scoped receiver, durable journal, original secret/ID/commitment, close races, recovery and privilege denial.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/issuance.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-public-db",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/public-db.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-issuance"],
+      "expected_tests": [
+        "INT01 / SEC04/12: restricted login privileges, private tables/functions/DML/escalation denied",
+        "FR-01: actual empty database read/page/API report market not found",
+        "SEC04: authenticated reader has exactly the public application SELECT/schema surface and no app EXECUTE",
+        "SEC04: bound real reader ignores later environment and supplied target arguments; HTTP cannot select targets",
+        "SEC04: actual-server guard rejects wrong marker/system ID/database, reader rejects wrong database/role",
+        "SEC01: actual view/read/API/page omit private book populated alongside DRAFT market; reads never mutate",
+        "SEC04/12: owner, private-reader and admin authority rejected by actual public adapter",
+        "Malformed and multiple actual market rows fail closed; database faults sanitized over HTTP"
+      ],
+      "requirements": [
+        "admin-public-isolation",
+        "schema-privileges",
+        "target-isolation"
+      ],
+      "expected_assertions": [
+        "Actual restricted public-reader grants/server guard/immutable target reject HTTP retargeting and private table/function/escalation; public book remains dark."
+      ],
+      "reason": "Payment-critical existing coverage: Actual restricted public-reader grants/server guard/immutable target reject HTTP retargeting and private table/function/escalation; public book remains dark.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/public-db.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-payment-request",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/payment-request.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-public-db"],
+      "expected_tests": [
+        "Integer conversion boundaries, literal canonical ZIP-321 and exact UA round trips",
+        "Private input allowlist rejects credentials, malformed amounts and malformed destinations",
+        "Rust process uses only bounded pipes, no wallet/config authority, and no diagnostic leakage",
+        "HTTP payment surface preserves privacy/origin guards and sanitizes errors",
+        "Only durable issuance exposes payment context; preparation failure/retry retains original credential",
+        "Failed completion-marker write exposes no payment context; same-attempt recovery uses original identity",
+        "Recovery revalidates immutable selection before presentation, including changed local amount/side",
+        "Selection changes during the reservation round trip fail before completion or payment context",
+        "Imported backup and generic finalized binding do not fabricate payment context or issue requests",
+        "Clipboard writes exact request after gesture, awaits success and leaves selectable text on failure",
+        "Browser close equality/crossing withholds payment text and controls without economic classification",
+        "Actual issuance UI displays only payment data, clears side fields and preserves navigation/privacy",
+        "Actual UI formatter failure retries without issuance or new credential/address",
+        "Public host and static backup host expose no payment API or participant presentation modules"
+      ],
+      "requirements": [
+        "exact-zip321",
+        "fresh-orchard-issuance",
+        "vault-bearer-backup"
+      ],
+      "expected_assertions": [
+        "Maintained formatter/browser preserve exact UA/zatoshis without extra metadata, require durable credential, and handle close, retry and HTTP privacy correctly."
+      ],
+      "reason": "Payment-critical existing coverage: Maintained formatter/browser preserve exact UA/zatoshis without extra metadata, require durable credential, and handle close, retry and HTTP privacy correctly.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/payment-request.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-public",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/public.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-payment-request"],
+      "expected_tests": [
+        "FR-01 / SEC01: normal DRAFT page, exact public API, UTC and security headers",
+        "SEC01: private field contamination never reaches API or renderer",
+        "SEC01 / lifecycle boundary: display only the nine stored statuses; no time inference",
+        "SEC06: every public text field is escaped; sources remain text with no external requests",
+        "Malformed, missing and invalid market data fail safely without partial fields",
+        "Market not found and database failure sanitization",
+        "SEC07/09: malformed requests, body rejection and mutation routes do not call database",
+        "SEC04/12: narrow environment and read SQL cannot import wallet/admin authority",
+        "SEC09: bounded concurrent reads fail closed and recover",
+        "SEC02/03/04: recursively bounded public capability closure, no TEST/destructive/admin/issuer/watcher/wallet authority",
+        "SEC02/04: boundary assertion catches forbidden transitive imports and re-exports",
+        "SEC02/04: boundary assertion rejects dynamic loaders and TEST authority inside approved modules"
+      ],
+      "requirements": ["admin-public-isolation", "signer-watcher-separation"],
+      "expected_assertions": [
+        "Recursive public imports/re-exports reject TEST/destructive/admin/issuer/watcher/wallet escalation; strict CSP, escaping and target-injection rejection."
+      ],
+      "reason": "Payment-critical existing coverage: Recursive public imports/re-exports reject TEST/destructive/admin/issuer/watcher/wallet escalation; strict CSP, escaping and target-injection rejection.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/public.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-boundary",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/boundary.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-public"],
+      "expected_tests": [
+        "SEC01/04/07 Phase 4: HTTP exposes health only; no admin or participant routes"
+      ],
+      "requirements": ["admin-public-isolation"],
+      "expected_assertions": [
+        "Public routes cannot invoke internal admin mutation or arbitrary SQL."
+      ],
+      "reason": "Payment-critical existing coverage: Public routes cannot invoke internal admin mutation or arbitrary SQL.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/boundary.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-vault",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/vault.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-boundary"],
+      "expected_tests": [
+        "SEC02/03/04: static vault source and dependency boundary, no network/telemetry or unsafe secret output",
+        "SEC01/02/06/07: static local routes have strict CSP; no participant mutation or private API",
+        "SEC01: Phase 5 public responses remain exact and vault routes unavailable on public origin",
+        "SEC03: actual static-vault process logs startup only across HTTP success/failure paths"
+      ],
+      "requirements": ["vault-bearer-backup", "admin-public-isolation"],
+      "expected_assertions": [
+        "Local vault/static and public routes enforce CSP/method boundaries with no network/telemetry/secret output."
+      ],
+      "reason": "Payment-critical existing coverage: Local vault/static and public routes enforce CSP/method boundaries with no network/telemetry/secret output.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/vault.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-vault-browser",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/vault-browser.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-vault"],
+      "expected_tests": [
+        "U04: real browser CSPRNG, independent 32-byte records; no insecure randomness",
+        "U04/SEC03: RNG and storage failures redact diagnostics and do not save a credential",
+        "Local browser storage capability failures fail closed",
+        "V01/U05: browser finalization matches every independent approved V1 vector",
+        "Independent local records: duplicate secrets/credentials, immutable final IDs and safe atomic update",
+        "Concurrent browser connections serialize additions and prevent duplicate finalization",
+        "Secret-bearing draft and finalized deletion require confirmation; cancellation/errors preserve data",
+        "Deletion confirmation cannot delete a record changed while confirmation was pending",
+        "Corrupted records reject reads and writes without deleting or resetting existing records",
+        "Unsupported metadata and IndexedDB versions preserve data and close old connections safely",
+        "Malformed actual storage schema fails safely without automatic recreation",
+        "Malformed indexes and metadata keys fail safely through transaction validation",
+        "Queued/blocked storage open times out safely and preserves records until blocker is released",
+        "Actual page reload persists draft/finalized credentials, without URL/HTTP/console secret disclosure",
+        "Real vault UI: drafts, explicit deletion confirmation, safe text rendering and no secret/network output"
+      ],
+      "requirements": ["vault-bearer-backup", "replay-prevention"],
+      "expected_assertions": [
+        "Actual isolated browser checks CSPRNG, IndexedDB atomicity/corruption/reload and safe rendering; independent bearer credentials remain recoverable."
+      ],
+      "reason": "Payment-critical existing coverage: Actual isolated browser checks CSPRNG, IndexedDB atomicity/corruption/reload and safe rendering; independent bearer credentials remain recoverable.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/vault-browser.test.mjs"
+    },
+    {
+      "id": "node-apps-web-test-ticket-backup",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "apps/web/test/ticket-backup.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-vault-browser"],
+      "expected_tests": [
+        "Backup exact schema and byte-for-byte round trip survive storage loss/reload; pending remains untouched",
+        "Only validated ISSUED plus committed local finalization enables export, including legacy retry",
+        "Strict primitive JSON parser rejects malformed, duplicate/escaped keys, nested data, invalid UTF-8 and oversize",
+        "Exact fields, compatibility, lowercase hex and existing market boundary; corruption never repaired",
+        "Duplicate imports are idempotent; identity, reused secret and draft conflicts preserve all data",
+        "Concurrent connections converge atomically; late write/transaction failure rolls back credential and marker",
+        "Corrupt receipts/records and unsupported metadata reject import/export without resetting data",
+        "Actual UI requires export confirmation, generic filename, local restore semantics and no network/secret output",
+        "Backup modules have no exfiltration path; public APIs expose no backup or private credential"
+      ],
+      "requirements": ["vault-bearer-backup"],
+      "expected_assertions": [
+        "Strict saved backup/import/export/commitment round-trip, cancellation and safe browser file handling preserve bearer authority."
+      ],
+      "reason": "Payment-critical existing coverage: Strict saved backup/import/export/commitment round-trip, cancellation and safe browser file handling preserve bearer authority.",
+      "environment": "TEST_ONLY",
+      "source_file": "apps/web/test/ticket-backup.test.mjs"
+    },
+    {
+      "id": "node-packages-protocol-test-claim-commitment",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "packages/protocol/test/claim-commitment.test.mjs"
+      ],
+      "depends_on": ["node-apps-web-test-ticket-backup"],
+      "expected_tests": [
+        "V01/U05/U06: approved frames, preimage and native BLAKE2b-256 match independent literals",
+        "V01/U05: repeatability and no input mutation",
+        "V02/U05: every claim-secret bit mutation changes the bound commitment",
+        "V02/U05: both final market and ticket IDs remain bound",
+        "U05: length frames distinguish ambiguous concatenations and embedded zero bytes",
+        "U06: object field order and uncommitted display labels do not change bytes",
+        "U05/U06: UTF-8 byte lengths, big-endian length and exact case/normalization",
+        "U05: wrong versions fail rather than hashing another profile",
+        "V02: 31/33-byte and non-byte secrets rejected without private error content",
+        "U05/U06: ill-formed Unicode and non-string IDs rejected before UTF-8 replacement",
+        "U05: unsigned u32 length overflow is rejected before frame allocation (fault fixture)"
+      ],
+      "requirements": ["vault-bearer-backup"],
+      "expected_assertions": [
+        "Independent canonical V1 literal vectors bind final market, ticket and 256-bit secret; malformed/mutated commitment inputs fail."
+      ],
+      "reason": "Payment-critical existing coverage: Independent canonical V1 literal vectors bind final market, ticket and 256-bit secret; malformed/mutated commitment inputs fail.",
+      "environment": "TEST_ONLY",
+      "source_file": "packages/protocol/test/claim-commitment.test.mjs"
+    },
+    {
+      "id": "node-packages-protocol-test-domain",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "packages/protocol/test/domain.test.mjs"
+      ],
+      "depends_on": ["node-packages-protocol-test-claim-commitment"],
+      "expected_tests": [
+        "SPEC §7: exactly nine public states; no internal close/refund mode added",
+        "U07 portion: positions remain binary; suggested payment/claim vocabularies"
+      ],
+      "requirements": ["integer-stake", "admin-public-isolation"],
+      "expected_assertions": [
+        "Exactly nine public market states and binary side vocabulary; no invented public close/refund state."
+      ],
+      "reason": "Payment-critical existing coverage: Exactly nine public market states and binary side vocabulary; no invented public close/refund state.",
+      "environment": "TEST_ONLY",
+      "source_file": "packages/protocol/test/domain.test.mjs"
+    },
+    {
+      "id": "node-packages-protocol-test-money",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "packages/protocol/test/money.test.mjs"
+      ],
+      "depends_on": ["node-packages-protocol-test-domain"],
+      "expected_tests": [
+        "U01: exact conversion, eight-place formatting and caller-supplied bounds",
+        "U02: malformed decimals never truncate or round into eligibility",
+        "U03: exact checked arithmetic beyond JS safe integers and at wide limits",
+        "U01/U03: seeded round-trip and arithmetic properties (seed 0x706861736532)"
+      ],
+      "requirements": ["integer-stake", "exact-zip321"],
+      "expected_assertions": [
+        "Exact zatoshi conversion and checked wide arithmetic reject malformed/fractional/overflow values."
+      ],
+      "reason": "Payment-critical existing coverage: Exact zatoshi conversion and checked wide arithmetic reject malformed/fractional/overflow values.",
+      "environment": "TEST_ONLY",
+      "source_file": "packages/protocol/test/money.test.mjs"
+    },
+    {
+      "id": "node-packages-protocol-test-secrets",
+      "kind": "node-tap",
+      "command": [
+        "node",
+        "--test",
+        "--test-concurrency=1",
+        "--test-reporter=tap",
+        "packages/protocol/test/secrets.test.mjs"
+      ],
+      "depends_on": ["node-packages-protocol-test-money"],
+      "expected_tests": [
+        "U04: invokes platform getRandomValues once on each fresh 32-byte array",
+        "U04: unavailable/failing RNG fails closed and clears partial output",
+        "U04: real platform RNG sampling; uniqueness is not proof of entropy"
+      ],
+      "requirements": ["vault-bearer-backup"],
+      "expected_assertions": [
+        "Independent 32-byte platform CSPRNG secret generation and failure zeroization; uniqueness sampling is not entropy proof."
+      ],
+      "reason": "Payment-critical existing coverage: Independent 32-byte platform CSPRNG secret generation and failure zeroization; uniqueness sampling is not entropy proof.",
+      "environment": "TEST_ONLY",
+      "source_file": "packages/protocol/test/secrets.test.mjs"
+    }
+  ],
+  "excluded_rust": [
+    {
+      "identity": "watcher::connect::tests::cli_requires_no_context_and_ignores_fake_wallet_and_pg_inputs",
+      "reason": "Auxiliary connect-only CLI/error diagnostic; actual watcher/TLS/canonical sync and economic tests remain included."
+    },
+    {
+      "identity": "watcher::connect::tests::missing_or_extra_arguments_are_closed_without_environment",
+      "reason": "Auxiliary connect-only CLI/error diagnostic; actual watcher/TLS/canonical sync and economic tests remain included."
+    },
+    {
+      "identity": "watcher::connect::tests::typed_errors_preserve_only_closed_class_and_genuine_grpc_code",
+      "reason": "Auxiliary connect-only CLI/error diagnostic; actual watcher/TLS/canonical sync and economic tests remain included."
+    },
+    {
+      "identity": "watcher::connect::tests::unavailable_local_endpoint_naturally_fails_with_closed_output",
+      "reason": "Auxiliary connect-only CLI/error diagnostic; actual watcher/TLS/canonical sync and economic tests remain included."
+    },
+    {
+      "identity": "watcher::connect::tests::wrapper_deadline_kills_stalled_tls_without_inventing_rpc_timeout",
+      "reason": "Auxiliary PowerShell connect-only timing/supervision; complete-gate failure remains unresolved and unpromoted."
+    },
+    {
+      "identity": "watcher::connect::tests::wrapper_natural_failure_is_distinct_from_outer_timeout",
+      "reason": "Auxiliary PowerShell connect-only timing/supervision; complete-gate failure remains unresolved and unpromoted."
+    }
+  ],
+  "source_pins": {
+    "apps/web/test/public-capability-graph.mjs": "4125ecf71df801abbd88c55e9b15a9ba30bcba21190249b3af9d94e15e6a7d5e",
+    "db/environment-bootstrap.mjs": "dce0e67aad469f182ff9970749d48c9ba6151bacad9691b1d32a02f383654a60",
+    "db/environment-identity.mjs": "04de79ade8a4351ae1e0e2788d1aa26a9b03049e01c1c7cb1fb91eeb2fef8d97",
+    "db/environment-test.mjs": "543f325689d6c594f26a7aa661462553eda5a2d26797e9e1ea1b14041ee4517a",
+    "db/environment.mjs": "dcd4750f7d6340879ff7af195e2c3d9cc82de28556b368a0ad49a28b20c3e877",
+    "db/migrations/0005_phase9_watcher.sql": "16a72f601c9cf08763ed484df00a40b855f03b76445b3358ffdb26c823e0bfd8",
+    "db/migrations/0006_bounded_close_proof.sql": "90922cef177f0f10a1069c2e0515f2f2c9b22e11fee30599cfe1d6bd5021f879",
+    "db/migrations/0007_phase9_admin_open.sql": "fb336b5733c54dc62a7c67923ff335e2d513732bd2a4d2d1c10a5aaa2fa62a04",
+    "db/public-reader-runtime.mjs": "6271112c8ddb9a5643b48c00d6bd0e9288653f3c04edfdf399747afa0c6a9982",
+    "db/schema/ENVIRONMENTS.md": "94205af138c1fad0251fc11b70ae3e23940d33f1216e8d27d4a3b554dfe374ea",
+    "db/schema/WATCHER.md": "a834b311fc2ba52f49f5706bc1c4cc432e14d474413465126ca581e6cd1c61cc",
+    "db/target-identities.json": "87a434a0c75c0ddf85ba8b0b4acab4495d96da753d21a1e21285844f3c3de762",
+    "db/target-registry.mjs": "7f8c511b6cb05b308f0a8cfb7d8973d47d4de62a6a662dae692337dc06b3c830",
+    "db/test-fixtures.mjs": "0ae994c848c7dedf5fa605c1e9ce293326c1b43f733ba3bea49cc1431b0f60b8",
+    "db/test/environment.test.mjs": "668582d1807e8244302f7775ecc5d42fc52c650cac3cafba74973496d8eb364b",
+    "db/test/evidence-wrapper.test.mjs": "2e91b0472cf08fb970283e4befa66ea5a31aa10d903d1d74d3421c2479a83c67",
+    "db/test/initializer.test.mjs": "009971f8ff5c9172097fcaea3ed0d19560279f3eb77877d7fe92802cdde0c556",
+    "db/test/public-reader-runtime.test.mjs": "f5a30049b848569f6e8e9804ed16e49eeae3c5c3f99c8df92626d158e3ab5878",
+    "db/test/server-start.test.mjs": "72d9e977f7dce08b2a31d3bf9baaf68480ede852079ada696bfaf5b759fe4d90",
+    "db/test/target-registry.test.mjs": "ede7f7e976d27795d2fd2b3e6e5f151311c1f2b123632e9a574f67e96529bd76",
+    "db/test/watcher.test.mjs": "27fd64d84f87f2925d2ce89633b1a049574dc534b0127e99c16a6fcccbe08306",
+    "db/watcher-provision.mjs": "3a0bec5126791e5952b80f681344e8cb93b8f53272e871e0b26d033186c8e0e5",
+    "docs/PHASE9_IMPLEMENTATION.md": "54a6ec023a5e2c1755060b781201a51e576f242f50e7342cb15be58531913ff3",
+    "scripts/dev/phase9-connect-only.ps1": "26dd8636713b85196e4ebabf3b62c2947354dd2fe800b31ec6dd604930752d9f",
+    "scripts/dev/phase9-tests.ps1": "e94c98acf3083f3ff33770f098d2c8b3c77cfa17f0fa0e0159a5e0d0a54f5e07",
+    "scripts/dev/postgres-isolated.ps1": "2b2ba20e214541a7fddce03319eaa4c7a9311a78202c3c22366c30ede6d75c06",
+    "scripts/dev/run-bounded.mjs": "0915b5ea5bb0d50ead84d31524c88f6698676cc2681835f906565d978c1a1790",
+    "scripts/dev/run-evidence.mjs": "2475c07643a2d83a9d22fe233c59d57108c25e6c5d3b621b37647e8668f7127d",
+    "scripts/dev/run-target.ps1": "cf3a2b61480f4c0fcb4c2eed97d511d24c7e4905930f391b3af12983183f82e5",
+    "scripts/dev/target-plan.mjs": "df6116681bf3ce71da68ea33d7ba243bf72a3800c549ed57d09e25dab985a520",
+    "scripts/dev/wallet-target.mjs": "889ff3506b88d97e48510344390563e32e3c0204f02033ae18c241051f8d396e",
+    "services/watcher/README.md": "e3c867e04cd1044273ee6fce97bbb4e062fa1b4096baa2f2326840cace6df364",
+    "services/watcher/db.mjs": "feed703815ae136a712d40c6ed0c04bfd79e245b83f9449b81ecf59e53374820",
+    "services/watcher/diagnostics.mjs": "530562a979c310ed8bcae8134ef1a64255038405d1428c0b96a8e2886f110478",
+    "services/watcher/main.mjs": "62f044dba1ccb675bc4f38d35c520b27c5acc6dc5b286f00c436525a625869cf",
+    "services/watcher/test/watcher.test.mjs": "556b5304b186484af6574bfa59d7c9461b8d3235c2d8faa49f1150361683a6a4",
+    "services/zcash/src/live_target.rs": "68a6fefa863b1914e515b9ebe2aba89ac63dfeee90924239461b848e8d84bbb9",
+    "services/zcash/src/watcher.rs": "929d2bd38536f1f8d78ff2d890945a3150b610fe8fa537b44f3e6d51747d84b0",
+    "services/zcash/src/watcher_close.rs": "a194da3815b07f85f6b971f7f7eae157cf9ddb43bb97c8a2216bd76f9023fdf0",
+    "services/zcash/src/watcher_connect.rs": "6444b21722c311eaf523a5ec76741eb7afef0c773a777442677ae3b4517e294e",
+    "services/zcash/src/watcher_connect_tests.rs": "e9d7b9e152e4598ea1738521bd07b7130a2f293405f76bc7ce1d119d5c5e1529",
+    "services/zcash/src/watcher_progress.rs": "0a3495f2afcd600f534901795eaf608eb424786874803a9907edf12548c5cd96",
+    "services/zcash/src/watcher_sync_tests.rs": "ffe9a6d6c3173cfb8b1d4538382a51b6419210e174f5382388863a4ff1d809ad",
+    "services/zcash/testdata/connect-only/LICENSE-APACHE": "cc117d90b498b32b11a886f279b359da16a73c3b01efbb2f5cc004b20262334e",
+    "services/zcash/testdata/connect-only/LICENSE-MIT": "e20fa2b8e0a2565f24a792b94b4bf4b6c2b9d36f781d8a9516e218a036e6677a",
+    "services/zcash/testdata/connect-only/README.md": "c4842490df8c966fc0e09e1cd547a83b66d5efb6edaa6ddbf1ff5e0584deb8ca",
+    "services/zcash/testdata/connect-only/chain.pem.txt": "cd455d0ea93c204c4ec1b569a59a51407e0f5969b53a2102ea519dedf9de2854",
+    "services/zcash/testdata/connect-only/end.key.txt": "5137467345dd24a91915c17cac20e66f6ac83cd8e0a0ca7aece5eb26e20ad739",
+    "services/zcash/testdata/connect-only/root.pem.txt": "0896dc570d53e0ee054003b5b5b753d7640422d412935e92d005512afd5e0944",
+    ".editorconfig": "1e2b20139723b7c508c05aff8ad51b0ef95f9e5c7a0119bcbef12e2d50ec4c35",
+    ".env.example": "3900be41a8f3aee08c4a078befa9fd3249f0427fd4c3a37548b7095a05db48d2",
+    ".gitattributes": "93699a1108fd9da226b06f84ee12e317f4ea4d2f18a8fd05260443fd1bf2faef",
+    ".github/workflows/ci.yml": "5c0da3652047ee6f56a8fda2eb9f46a622132352e5e832fa01525e70cc5fd928",
+    ".gitignore": "28dd5f3d8c2f860301ad09d3d4c5450ad59e4e831297c976eb60dd97aaf2cc75",
+    ".node-version": "73fb1b615e2043a933be1c0895cde4358036acc28d785692509b822aa53c761f",
+    "AGENTS.md": "a9009940f68db1e94b3855764b22f81879847c63a5b875d10ad0aa53e9487fed",
+    "Cargo.lock": "1c8037db27c404986fac587ac20c0549d117e6dadbf2f4dfda51a2d91aacb789",
+    "Cargo.toml": "5f09313a9a875d454d65e99692c00c4a1361f8e8f777f06f5d0ba007317bc9ba",
+    "README.md": "2dd4357ad0ca515da7e7d9c4d8a732f9a99e6b3927f7743bca5c371ccbaa4067",
+    "apps/web/ISSUANCE.md": "551d00a58beb41c37b79a61bc3147b43cc8ab91ac9f0032af54feec9e3c9e299",
+    "apps/web/PAYMENT_REQUEST.md": "de5a8e1ed827efa0a99fa66c573d335edb289a98c318a084bfa266a1292f9c2b",
+    "apps/web/README.md": "369d29f0372583e899f0f193cb8c75a61c38b572a0184166f9eaff4f0da11b98",
+    "apps/web/TICKET_BACKUP.md": "bb6db486af4a9fd40a3a9e0c35ccb7cb90a378ec177b2c18a9bea81ae06e2c55",
+    "apps/web/VAULT.md": "3a536a3f32dae10c4e9fc92faa23d8b5d4e6c02c4bc585c66ceff64724f82dbc",
+    "apps/web/build-vault.mjs": "a96f24be3543002dfd29c0e66eec4437b87af4ce54fd16972c33483324443b27",
+    "apps/web/eslint.config.mjs": "e756bae0a94f638f9c193b465618e27c8de964c1a99aac79dec09be9d039f20f",
+    "apps/web/package.json": "aa26798cae362c6df643501912c7793ff1832ee0ea4a16b99f9b9cf680014bee",
+    "apps/web/src/admin-cli.mjs": "1e128d85a57819500a49331374c50f974a7d1223e3c9fb30e12e15057f6930a5",
+    "apps/web/src/admin.mjs": "441bd43cf017218c1f3163a2f43cf4930ff217753278f4ea6a9e6139e28b948f",
+    "apps/web/src/backup-ui.mjs": "d13ced6ae897df9c5de8d4b17b9e9520ccbb1cbaab8752c780c3c30de6ff2183",
+    "apps/web/src/backup.html": "c1f7879ce506c8eecde750845c8a7aca86975703d1a1de359a17ae6df8c84cfd",
+    "apps/web/src/issuance-cli.mjs": "4e11bc29e13a577cfd0bc84736ef954610e59e6d34b7584ab7e7b6df06a3b869",
+    "apps/web/src/issuance-client.mjs": "8aed04d58ecb57c7578109c5ae9c5cbd4e0d54fd9400baf3e42987eecb343c3a",
+    "apps/web/src/issuance-server.mjs": "36af8bfa75d505b42be2acd500a648d1271b98cf974049a29bddaf60641f4437",
+    "apps/web/src/issuance-ui.mjs": "034547f1b760101f24e77a6cae448898e785205ae4576ab9df5f8809cbe00a2e",
+    "apps/web/src/issuance.html": "b27f2bcdecb83d656edc9447c477e5d9164ccaa43d81d7a04b47ee9fb8923f8a",
+    "apps/web/src/issuance.mjs": "58ffd31ba8df8f45800629987e8d275535f47a0790415d5a377ffbf165532d56",
+    "apps/web/src/local-vault.mjs": "026a78915969e1590408ae3a4e3b7dac615735a4fe88d8172190f88e16f39c35",
+    "apps/web/src/market.css": "621431fd2039ae774248ccac9427a2ed255a2ae773ecf501ab59aa8462bdf5b7",
+    "apps/web/src/payment-request.mjs": "c8544cc7dc0746b85e40f9e8a45c1d06a0475b5249bf7f86b7720ffec6750a48",
+    "apps/web/src/payment-ui.mjs": "5a2d79ba2cde6db072673ad9634d02b9505b7e258a6bfd837d7c291bf06bcba8",
+    "apps/web/src/public-market.mjs": "6608ce0fea9881277d469c06bc2c4c914892b3436afb50d8c9e1ce2bf4e4b162",
+    "apps/web/src/public-server.mjs": "c38a2c8c06ccd9e8e8d11d69b60609eacca87b965d31b56dcd1f404a8cdb2449",
+    "apps/web/src/server.mjs": "db5c9a3cd22361af4cd066c7319aa1b9c38b9ef3ef60a29c80babdb29ee91485",
+    "apps/web/src/ticket-backup.mjs": "70791ebccea9bba94d2567b89102a5f21f027f9f77ef94fabf30eddf9c075793",
+    "apps/web/src/vault-cli.mjs": "93d23ac35b2415bc4a720c5f23e7be8cbfbbe3bd62ffa8720d1ab1efb0171a0a",
+    "apps/web/src/vault-server.mjs": "363eb484beb5d64494d020eaac82f19d35fa5a5b5785c63e889b996d6af07f9a",
+    "apps/web/src/vault-ui.mjs": "521391b9a8d188f4d8b321b03bf3d43389f7777f405272d9fbaf1bf55286723c",
+    "apps/web/src/vault.css": "f5d1f39f85e80cd9feb7c551152e47543aea138cc3d86aab55f7746f8007ba54",
+    "apps/web/src/vault.html": "ebf336991ab556be2bb6ee422729dfe291697f58954486bac552a75aba28987c",
+    "apps/web/test/admin.test.mjs": "a7995a8cbd77778d3d78403538ca92a2f14ddc4080c78bbc5f9bf5674b0ac006",
+    "apps/web/test/boundary.test.mjs": "50966cd0d168d27e7c64b65bd7bb13cd9b580f8568b6ebe0b393ef0364802bc3",
+    "apps/web/test/issuance.test.mjs": "30ef9dbc66819fd54eca2040987c19ecb3816eb45df64c93bb2c3f90e5a22585",
+    "apps/web/test/payment-request.test.mjs": "7c76b148d681a491a8c766b7a5f04d277fcc66e7394fd0676a6ece3b18f65665",
+    "apps/web/test/public-db.test.mjs": "5722bc466fc0e18d8c274a860368f90ee4160e2ec032c60663f8bbdbd0a13376",
+    "apps/web/test/public-fixtures.mjs": "b86439aced9598408fa41b5b05cf05f1bf3c68b6e836a3aa1442b42a64c52182",
+    "apps/web/test/public.test.mjs": "212669e9c1e6c684fdf319fd4aa45357f53b36ee56c41c521ea31f1e2fdaba5e",
+    "apps/web/test/ticket-backup.test.mjs": "bdf8bae1eceb74548096cb074220958b4fc281aae3911a970f75cfa9efbb7007",
+    "apps/web/test/vault-browser.mjs": "6aa49e08c4b9eac7e5c90b2a042b38247659b19235aae0b9dca1e8cbc46dc505",
+    "apps/web/test/vault-browser.test.mjs": "a42304a23d3bf2d0b27a83664ed8d6a1c81c173fef32d08600b3b55874bf83d2",
+    "apps/web/test/vault.test.mjs": "c137fd62f8ee7b5716ae8a15cfb7ef22bb52407a1ab3eb4ff58f8c1c788c4f58",
+    "db/admin-provision.mjs": "46d80d893916bb44ac29fbb0d74fc931102429aa59391a41c050a757206fbd91",
+    "db/issuance-provision.mjs": "bcdf8313710d473e300110ab668a1352e3cde2948947fade24b18374ae81a2f9",
+    "db/issuance-runtime.mjs": "07e19b44983a9f2fd08363b447f379596aed5c611c964cf0ac722a9d17958b45",
+    "db/migrate.mjs": "4b0bc24468520a2fc2b8dfcf7ab6160c82580a09bd13b701827ae17c336831cb",
+    "db/migrations/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "db/migrations/0001_product_state.sql": "c0be8a345767945a6ad085577614db6e80eb0821fa3718e93a410ff6dad1a7e4",
+    "db/migrations/0002_freeze_and_authorization_guards.sql": "12bcd94831735fec440b5274c92883ee21add7c79f6654069ab83afdcbd6945f",
+    "db/migrations/0003_internal_admin_controls.sql": "81b3745aa86a7e7414f748c4e871b28012ea6e4eec7dbf9ba9195851a1d04241",
+    "db/migrations/0004_ticket_issuance.sql": "94427f110f4a6b7e25ad6ed43b3b6cfbeefbbf44ca76c913d35c73e724bf3925",
+    "db/public-provision.mjs": "b845bcc4ddb16a27b353c07f9abad908e1e67b828b5cc8de25239b4e437a2678",
+    "db/public-read.mjs": "672dac20a75855c6012fd813efffe3775f0fc842eae0f995dbf6f25942e07bca",
+    "db/schema/ADMIN.md": "27b898b6182bdadcf22f28c5ad580fff0e4bed9208bc69ec92587b61bd62067b",
+    "db/schema/ISSUANCE.md": "d0c8d0d06157e032353c46a99715d582e79a408ff5596dcabf2a9dcfe0eb4ada",
+    "db/schema/PUBLIC.md": "310d13ea5bd80a77f220adb45ec7521d8bd89a623f83c2a884e82f2a8b423700",
+    "db/schema/README.md": "8335f90a6a406260de17e61df1c60bd1e827d7abb8d68d3acef2a1ad0d982d31",
+    "db/test/schema.test.mjs": "7f1211fce894b7e9496af38d3e2e146e024e2d606c69ae9db0a875a9a5a2cdd2",
+    "docs/ARCHITECTURE.md": "c258ae8a1182fcfe35520c3cf3237fdec6817a9383c1bd1b58a946926a41fb6c",
+    "docs/CLAIM_ENCODING_V1_IMPLEMENTATION.md": "33d9a1f9103259cd3852f774920589aa78ecf3fa162e6423e2aff311cdf572b5",
+    "docs/IMPLEMENTATION_PLAN.md": "4721435e76802e614538be9e960789f827e3401d53476ad7fa6156559a3e6c00",
+    "docs/PHASE2_RESULTS.md": "5e22966b455b218ce396f193c3cff639884c1437f6b83d05ce93048e32d70bde",
+    "docs/PHASE3_RESULTS.md": "0886f5a59a66af954890ca6eb0d1b2248d3461159dd81971f104cdd7730660e4",
+    "docs/PHASE4_RESULTS.md": "1efccc4e5c1f4b2c6ead42baf570e683679cabd3d2b8b08d4a9ebd012be1c4bf",
+    "docs/PHASE5_RESULTS.md": "53e0c1e2f85bf931cae3af37144505dd620e53939a1ef569c7f76c57c8e10a05",
+    "docs/PHASE6_RESULTS.md": "1aa41ed2df65e5813126220f64f1105d075763cccf75887bba95111b4a15b3b5",
+    "docs/PHASE7_RESULTS.md": "361610b0d9a801c6af197eba1928ec4877d44254065e61fc99b7963cfb58a636",
+    "docs/PHASE8_RESULTS.md": "34917107c753bc053b08c7f574c1ce5242f795d165fc97d755470e9c5cfec6ef",
+    "docs/PRD.md": "cf1e255c2cb9cb1096518a8b49ca86c54c7c23fb69848470855789c57b867c27",
+    "docs/SPEC.md": "5723c5fd669eabac1a3ac75e79419e617e546be40c7d210f904606190b9be7ad",
+    "docs/SPIKE_RESULTS.md": "e5cae4c1fe5106a2971d5caa8388cd0e30f75b68490f5aaa8f6e5c3aa346b9cc",
+    "docs/TEST_PLAN.md": "5ea134edd3cf8683ebc1c84af4ea10b1700d68b13d425febcfa63204bff58255",
+    "docs/THREAT_MODEL.md": "bd00b67be7ec9b8bdc5b6675a5b68d58e48e26e970a6684535194a7d2175d52e",
+    "docs/TICKET_BACKUP_RESULTS.md": "3ac1de7eecc01a17cd5d8cc097c696bf0eaa6ca6456d1eaa22fb5a3113586585",
+    "package-lock.json": "36feb33f482764f2b3d861d290875f698203962fee49e6b838a33dfc92faee94",
+    "package.json": "cc5b85fbf0c3b629e419f8768c0a190e762d509c13817a5b2f9afde87ab736c6",
+    "packages/protocol/CLAIM_ENCODING_PROPOSAL.md": "58f9370beab486d81f8d63975149f1dbd0310416004f7698d3c02f990168d12d",
+    "packages/protocol/README.md": "92df385920415a933632fa0977cc2e85c205e9a02065ad258c08515b369bff50",
+    "packages/protocol/eslint.config.mjs": "7ab21e65436b8e1bcfab489f79e501e7c7b75700d614d0a650fe09b61c0c3f1d",
+    "packages/protocol/package.json": "55029e9cbfd124b931a677bac0ae6dfee40d319d8145afa0aeb851d730855fab",
+    "packages/protocol/src/claim-commitment.ts": "7ff3d0480101503d1272e8247b94552025b8d874c95b418c397febe745cc81ca",
+    "packages/protocol/src/domain.ts": "b197ac7b3a2263a21ec57886bea6aa347882255cb141175fb84ae1a47c9fb521",
+    "packages/protocol/src/index.ts": "42b8d28ff7df0c29358370d4213b9f04a9f6e386d40dbb3bb6d12b4128fd57c2",
+    "packages/protocol/src/money.ts": "dbbd5a0bcdeef5290cf8e2cf3871bb91cdeeff3b01daed10e8f9989ee77554ee",
+    "packages/protocol/src/secrets.ts": "e7870ea35e3dd4f9667e594ff0e02e842438c86d801165188a32730b9d4f3c53",
+    "packages/protocol/test/claim-commitment.test.mjs": "a50867c0004bc43c4fc517e1f11c8a942f07bbc5800513e464f0f05a3120d925",
+    "packages/protocol/test/domain.test.mjs": "82aeedf17820b70181f5b45973167cb162637e99b3f5f0d05412ae3fc9c619c4",
+    "packages/protocol/test/money.test.mjs": "1310cad4850c0775ea689a09d4efa3137965f5e5ff054f3bafd17c1da51597cc",
+    "packages/protocol/test/secrets.test.mjs": "ba19997ed28bb66fb859fbc6288176917dc6b2a9e882ae76b3207b36b67b7631",
+    "packages/protocol/test/types.ts": "0caf238dafa18d2f0a3df42d124412fa48e2bf7dc011ba2eaaf0febb18afa9c7",
+    "packages/protocol/tsconfig.json": "c5b54fab61582ecfb53e22b9b7cb58fe1f881729fdc8c39064a55c1a096f1f0d",
+    "packages/protocol/tsconfig.types.json": "c10cfd9eaf70676ba7b971febfe547762b2e7c1034882e876911f7bcb39b69ac",
+    "rust-toolchain.toml": "2ad6f15416572b4836585087f1d4abc53b8fa2dbd616f8dacfaa587ed6714228",
+    "rustfmt.toml": "f32d2f03b3f4b1e295c79ed49d543f1205c7dac7c3dc74f05a5a27af4fea0584",
+    "scripts/demo/.gitkeep": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scripts/dev/activate.ps1": "7ec1b19e2f08d332561d7c97fb100b38dc4145681245f620b0925a58dbd23bb2",
+    "scripts/dev/check-environment.ps1": "da85d45b38e12c44b8253f9ae50ab2a98fa8d750c127353b2ce282a95acc6acb",
+    "scripts/dev/phase1-frost-api-probe.rs": "e78ea7a841f320a0f88ecae52e7fa665cc9015e4176256cc7a75c75d1a34973f",
+    "scripts/dev/phase1-mapping.mjs": "c25461d574ded1779ee114941043fb3de76599155e2c68145a974e2be873517f",
+    "scripts/dev/phase1-pczt-review.rs": "6dafc7e29f79e32c7f8ef39e5c0f8a975405c0d70d6668e35c0273b577256352",
+    "scripts/dev/phase1-receiver-check.rs": "478fec35725216d898271f0015e331d38bb1274f3742496990880fa5f54bb5e8",
+    "scripts/dev/phase1-view-import.rs": "56164fc04d71cb3d40128eb761cd5fd771756cd16f772fb47b6be6be607eb7c2",
+    "scripts/dev/phase1-zip321-pair.rs": "9ed3c003193a4495cfc17197d63f03e9e6e24f7f140e5c4eaf7196526a92a8ae",
+    "scripts/dev/phase2-claim-reference.rs": "4f582ea9ccc5f2f1d499ae88bc07f7529ee99ee07f3d5fafc8e815d29e2d5ad0",
+    "scripts/dev/postgres.ps1": "f86946abe8b6d45378c564038912f92cb39570cc3bb12a978383195d05013237",
+    "scripts/dev/product-db.ps1": "b9a4e6ef6ef98868745b75244f399e88649b08205fac93005e32bf5641d8b5b2",
+    "scripts/dev/testnet-transaction-probe.rs": "4995aa85e76572c06ef3aeb851136aed7511f6a0e4ad44ec23e8618a2b9adcbb",
+    "scripts/dev/wallet-evidence.mjs": "a5aea750b86df5d6c7cd5008eb6776b818c760d1b89acbad4556f22a8cb11713",
+    "scripts/dev/zcash-devtool-ironwood-sign.patch": "34496babbb36f48c658c7a7e703329a1241ca1310c349f11dcac42ee908b8786",
+    "services/zcash/Cargo.toml": "d2e2b76151b0959ffd4548bb2afd2d44c02d30ab0ee5bd71681f52b6257157c3",
+    "services/zcash/README.md": "21a63690d5bf91b7a8ad5b6be875d30f4ccbc95f69b60bd73130b2ddd4fe8db0",
+    "services/zcash/examples/issuance-fixture.rs": "5a1d2ade147aa654bb12c4935f11260e213e9dc46aa6a1798b6d96f6491e3cca",
+    "services/zcash/examples/payment-request-fixture.rs": "355720930e8e9b9068edeeb00b4b1b19ba2b8bead81a7432a805e6e01ca07418",
+    "services/zcash/src/allocation_server.rs": "e640e17bff4f4a71a716520956b3661fce18abbc220450c273533ebd4cdd3857",
+    "services/zcash/src/issuance.rs": "46ca00ccf45de0d9dd3a6ed4856cc0d7f3b3945b72e89b05713c13bd860d98a8",
+    "services/zcash/src/lib.rs": "64b10457d7015766e9d262deea6182fbdf56f219b92203f299a545da8242e53c",
+    "services/zcash/src/main.rs": "2153402251491d15d550e3fbe829308d62a8a72482f1ce4c99dd14090aa83739",
+    "services/zcash/src/payment_request.rs": "9e71f33b6913632d0aefe74a36786ecddeec35a53a9a2b918f46d071626d2659",
+    "test-vectors/README.md": "6af7c3308825fe91ae6a8cfea2e8db17068097ff69b6963b7c500cdbc9b0d0c2",
+    "test-vectors/claim-commitment-v1.json": "7709bd5e07f183945303f9938035e9ca4a10ceda2c05e296412c6805f29cc3db",
+    "test-vectors/reference/Cargo.lock": "4d4c09f1fa2763e8db0e1ac1c3a5b86f2a2e137216f7c7b578faabd7e60d481e",
+    "test-vectors/reference/Cargo.toml": "66a5127279e85677b34c77845fa5536dfadac0e93b32cf6867ca9b59ea5aff20"
+  },
+  "environment_policy": {
+    "test_only": true,
+    "live_authorization": false,
+    "test": {
+      "system_identifier": "7697541254856017064",
+      "cluster_id": "8a0bf1f9-e2e5-4af4-b449-90ab32d950af"
+    },
+    "old_live": {
+      "system_identifier": "7697706083887339692",
+      "cluster_id": "0c39a4b7-f37f-4fde-b81d-502d61724e52"
+    }
+  },
+  "preservation_groups": {
+    "historical_database": 431,
+    "historical_artifacts": 241,
+    "old_live_wallet_evidence": 49,
+    "protected_pg": 13,
+    "private_snapshots": 22,
+    "bearer_backup": 1,
+    "test_profile_marker": 2,
+    "audit_support": 1342
+  },
+  "outside_scope": [
+    "No execution engine or Windows Job Object repair. Imported records require external successful native zero-active ownership observations; root exit alone is insufficient.",
+    "Manifest readiness grants no application-suite execution, V2 creation, provisioning, funding or LIVE reconciliation. TEST is the only destructive test environment.",
+    "No genuine testnet payment/three-confirmation acceptance, wallet parsing, live restart/rescan or deployed privacy evidence is supplied by synthetic tests.",
+    "No lock/Merkle publication, oracle, settlement, claim, shielded payout/refund, PCZT integration, FROST or production/mainnet readiness.",
+    "External evidence is operator-supplied, not cryptographically attested. Reporter hash/structure validation cannot create absent native observations or prove an OS-owner adversary honest.",
+    "Focused results never replace or promote the blocked complete R1/R2 gate."
+  ]
+}

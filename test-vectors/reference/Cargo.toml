@@ -1,0 +1,15 @@
+[package]
+name = "phase2-claim-reference"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Independent test-vector tooling, never a product workspace or signer dependency.
+[workspace]
+
+[dependencies]
+blake2b_simd = "=1.0.5"
+
+[[bin]]
+name = "phase2-claim-reference"
+path = "../../scripts/dev/phase2-claim-reference.rs"

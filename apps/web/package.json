@@ -1,0 +1,18 @@
+{
+  "name": "@darkpool/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "npm run build --workspace=@darkpool/protocol && node --watch src/server.mjs",
+    "start": "node src/server.mjs",
+    "build": "npm run build --workspace=@darkpool/protocol && node build-vault.mjs && npm run check && npm run check:vault && npm run check:issuance && npm run check:backup",
+    "check:backup": "node --check src/ticket-backup.mjs && node --check src/backup-ui.mjs && node --check test/ticket-backup.test.mjs",
+    "vault": "node src/vault-cli.mjs",
+    "issuance": "node src/issuance-cli.mjs",
+    "check:issuance": "node --check src/issuance.mjs && node --check src/issuance-cli.mjs && node --check src/issuance-server.mjs && node --check src/issuance-client.mjs && node --check src/issuance-ui.mjs && node --check src/payment-request.mjs && node --check src/payment-ui.mjs && node --check test/payment-request.test.mjs && node --check ../../db/issuance-runtime.mjs && node --check ../../db/issuance-provision.mjs && node --check test/issuance.test.mjs",
+    "lint": "eslint src test build-vault.mjs --max-warnings=0",
+    "check:vault": "node --check build-vault.mjs && node --check src/local-vault.mjs && node --check src/vault-ui.mjs && node --check src/vault-server.mjs && node --check src/vault-cli.mjs && node --check test/vault.test.mjs && node --check test/vault-browser.test.mjs && node --check test/vault-browser.mjs",
+    "check": "node --check src/server.mjs && node --check src/admin.mjs && node --check src/admin-cli.mjs && node --check src/public-market.mjs && node --check src/public-server.mjs && node --check ../../db/public-read.mjs && node --check ../../db/public-provision.mjs && node --check test/admin.test.mjs && node --check test/boundary.test.mjs && node --check test/public.test.mjs && node --check test/public-db.test.mjs && node --check test/public-fixtures.mjs"
+  }
+}

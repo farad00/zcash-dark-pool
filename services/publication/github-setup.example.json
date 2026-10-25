@@ -1,0 +1,22 @@
+{
+  "destination": {
+    "repository": "https://github.com/OWNER/DEDICATED-PUBLIC-LEDGER-REPOSITORY",
+    "repository_id": "REPLACE_WITH_APPROVED_NUMERIC_REPOSITORY_ID",
+    "path": "testnet/ledger-v1.json",
+    "branch": "main"
+  },
+  "trust": {
+    "status": "UNAVAILABLE",
+    "policy_ref": "REQUIRES_APPROVAL",
+    "evidence_class": "EXTERNAL",
+    "repository": "https://github.com/OWNER/DEDICATED-PUBLIC-LEDGER-REPOSITORY",
+    "path": "testnet/ledger-v1.json",
+    "archive_origin": "https://INDEPENDENT-WITNESS-HOST",
+    "witness_spki": "REPLACE_WITH_INDEPENDENT_ED25519_PUBLIC_SPKI_BASE64",
+    "ca_bundle": "REPLACE_WITH_APPROVED_TSA_CA_CERTIFICATES_AND_CURRENT_CRLS",
+    "tsa_policy_oid": "REQUIRES_APPROVAL",
+    "max_clock_skew_seconds": "REQUIRES_APPROVAL",
+    "max_witness_lag_seconds": "REQUIRES_APPROVAL"
+  },
+  "openssl": "C:\\Program Files\\Git\\usr\\bin\\openssl.exe"
+}

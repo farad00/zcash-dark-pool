@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "mode": "COMMON_CONTROL_TECHNICAL_SEPARATION",
+  "destination": {
+    "repository": "https://github.com/farad00/zcash-dark-pool-commitments",
+    "repository_id": "1427973036",
+    "path": "testnet/ledger-v1.json",
+    "branch": "main"
+  },
+  "archive_origin": "https://0xfarad.github.io",
+  "archive_base_path": "commitment-witness",
+  "openssl": "C:\\Program Files\\Git\\usr\\bin\\openssl.exe",
+  "trust": {
+    "status": "UNAVAILABLE",
+    "policy_ref": "common_control_REQUIRES_APPROVAL",
+    "evidence_class": "EXTERNAL",
+    "repository": "https://github.com/farad00/zcash-dark-pool-commitments",
+    "path": "testnet/ledger-v1.json",
+    "archive_origin": "https://0xfarad.github.io",
+    "witness_spki": "MCowBQYDK2VwAyEAjdynM1FGNbyu0jJpnMpHMus1n3O/XxKbiFmr7KPnaU8=",
+    "ca_bundle": "REQUIRES_APPROVED_CERTIFICATE_CHAIN_AND_CURRENT_CRLS",
+    "tsa_policy_oid": "REQUIRES_APPROVAL",
+    "max_clock_skew_seconds": "REQUIRES_APPROVAL",
+    "max_witness_lag_seconds": "REQUIRES_APPROVAL"
+  }
+}

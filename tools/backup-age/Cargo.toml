@@ -1,0 +1,11 @@
+[package]
+name = "darkpool-backup-age"
+version = "0.0.0"
+edition = "2024"
+publish = false
+
+# Isolated tool: does not alter the product or wallet dependency graph.
+[workspace]
+
+[dependencies]
+age = { version = "=0.12.1", default-features = false }

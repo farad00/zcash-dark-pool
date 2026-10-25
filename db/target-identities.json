@@ -1,0 +1,42 @@
+{
+  "TEST": {
+    "directory": "postgres-test",
+    "port": 55433,
+    "database": "postgres",
+    "role_prefix": "darkpool_test_"
+  },
+  "LIVE_EVIDENCE": {
+    "phase9_payment_v1": {
+      "directory": "phase9_payment_v1",
+      "port": 55434,
+      "database": "darkpool_phase9_evidence_payment_v1",
+      "role_prefix": "darkpool_live_",
+      "protected_parts": ["phase9", "live_payment_v1"],
+      "watcher_directory": "view-only",
+      "preserved": true,
+      "system_identifier": "7697706083887339692",
+      "cluster_id": "0c39a4b7-f37f-4fde-b81d-502d61724e52"
+    },
+    "phase9_payment_v2": {
+      "directory": "phase9_payment_v2",
+      "port": 55435,
+      "database": "darkpool_phase9_evidence_payment_v2",
+      "role_prefix": "darkpool_live_v2_",
+      "protected_parts": [
+        "postgres-live-evidence",
+        "phase9_payment_v2",
+        "protected"
+      ],
+      "watcher_directory": "watcher",
+      "preserved": false,
+      "reserved_system_identifiers": [
+        "7697706083887339692",
+        "7697541254856017064"
+      ],
+      "reserved_cluster_ids": [
+        "0c39a4b7-f37f-4fde-b81d-502d61724e52",
+        "8a0bf1f9-e2e5-4af4-b449-90ab32d950af"
+      ]
+    }
+  }
+}

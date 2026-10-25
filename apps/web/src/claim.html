@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Private ticket claim · Testnet</title>
+    <link rel="stylesheet" href="/vault.css" />
+    <script type="module" src="/claim-ui.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">DARK POOL</span><span>Zcash testnet</span>
+      </header>
+      <h1>Claim with your ticket</h1>
+      <nav>
+        <a href="/">My predictions</a> · <a href="/backup">Ticket backups</a>
+      </nav>
+      <p id="market-status" role="status">Checking market status…</p>
+      <button id="refresh-market" type="button" disabled>
+        Refresh claim eligibility
+      </button>
+      <p id="eligibility" role="status">
+        Claims are not available until lifecycle checks pass.
+      </p>
+      <aside>
+        <p>
+          Your ticket is a bearer credential. Anyone with its secret can claim.
+          Keep your backup private; there is no identity-based recovery.
+        </p>
+        <p>
+          Browser storage and backups are not encrypted by this app. Same-origin
+          scripts, extensions or malware may read them.
+          <a href="/backup">Manage backups</a>.
+        </p>
+        <p>
+          Positions, stake sizes and payouts are hidden from the public
+          blockchain and other market participants. The market operator has the
+          viewing/application access required for settlement. Website, IP,
+          browser and timing metadata are not hidden by Zcash.
+        </p>
+      </aside>
+      <section>
+        <h2>1 · Select or restore your ticket</h2>
+        <label
+          >Saved ticket
+          <select id="ticket" disabled></select
+        ></label>
+        <label
+          >Original ticket backup
+          <input
+            id="backup"
+            type="file"
+            accept="application/json,.json"
+            disabled
+        /></label>
+        <button id="import" type="button" disabled>
+          Import ticket locally
+        </button>
+        <h2>2 · Review a fresh destination</h2>
+        <label
+          >Fresh Orchard-capable testnet Unified Address
+          <input
+            id="address"
+            type="text"
+            maxlength="1024"
+            autocomplete="off"
+            autocapitalize="none"
+            spellcheck="false"
+            disabled
+          />
+        </label>
+        <p>
+          Use a fresh shielded address. No transparent fallback. Participant
+          entitlements are paid in full; network fees are externally subsidized.
+        </p>
+        <button id="check" type="button" disabled>Review claim request</button>
+        <section id="review" hidden>
+          <h2>Confirm private submission</h2>
+          <p id="review-text"></p>
+          <button id="submit" type="button" disabled>
+            Confirm and reserve claim
+          </button>
+        </section>
+        <p id="message" role="status" aria-live="polite">
+          Opening local ticket storage…
+        </p>
+        <p id="claim-result" role="status" aria-live="polite" hidden></p>
+      </section>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Predictions — local ticket vault</title>
+    <link rel="stylesheet" href="/vault.css" />
+    <script type="module" src="/vault-ui.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">DARK POOL</span><span>Local device · Testnet</span>
+      </header>
+      <h1>My Predictions</h1>
+      <p>
+        This vault keeps independent credentials on this browser and device. It
+        creates no server account.
+      </p>
+      <aside>
+        <h2>Keep control of your credential</h2>
+        <p>
+          The ticket secret controls claim/refund capability. Anyone who obtains
+          a finalized ticket credential may control its value.
+        </p>
+        <p>
+          <a href="/backup">Individual ticket backup and restore</a> are
+          available for completed issuance with a saved local binding. Drafts
+          and pending attempts cannot be exported. Losing or clearing browser
+          storage or device data can cause permanent loss of locally held claim
+          capability. The server cannot recover your claim secret.
+        </p>
+        <p>
+          Browser storage is not encrypted by this app or hardware-backed.
+          Browser extensions, malware or a compromised client can read it.
+        </p>
+      </aside>
+      <section>
+        <h2>Local records</h2>
+        <p>
+          A draft holds a locally generated secret. It has no server-issued
+          ticket ID and is not an accepted prediction. A finalized local
+          credential has final IDs supplied by a later issuance flow; it does
+          not prove funding or claim eligibility.
+        </p>
+        <p>
+          Ticket issuance, prediction submission, payments and claims are
+          unavailable. Creating a local draft only saves a fresh secret on this
+          device.
+        </p>
+        <button id="create-draft" type="button" disabled>
+          Create local draft
+        </button>
+        <p id="message" role="status" aria-live="polite">
+          Opening local storage…
+        </p>
+        <ul id="records"></ul>
+      </section>
+      <noscript
+        >JavaScript is required for local storage. No records have been
+        changed.</noscript
+      >
+    </main>
+  </body>
+</html>

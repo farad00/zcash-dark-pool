@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "profile": "DARKPOOL_UNFUNDED_REHEARSAL_PROPOSAL_V1",
+  "approval": "PROPOSED_NOT_APPROVED",
+  "kind": "UNFUNDED_REHEARSAL",
+  "network": "testnet",
+  "instance": "testnet_observation_v1",
+  "host": "127.0.0.1",
+  "chain_endpoint": "https://testnet.zec.rocks:443",
+  "port": 55436,
+  "database": "darkpool_testnet_observation_v1",
+  "root": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1",
+  "paths": {
+    "runtime_bin": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\bin",
+    "postgres_data": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\postgres\\data",
+    "viewer_directory": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\viewer",
+    "viewer_database": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\viewer\\data.sqlite",
+    "credentials": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\credentials",
+    "control": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\control",
+    "evidence": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\evidence",
+    "recovery_staging": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\recovery-staging",
+    "encrypted_local_backups": "C:\\ProgramData\\ZcashDarkPoolRehearsal\\testnet_observation_v1\\backups"
+  },
+  "signer_root": "C:\\ProgramData\\ZcashDarkPoolSigning\\testnet_observation_v1",
+  "off_device_proposal": {
+    "device": "COMPUTER_B_PRIVATE_STORAGE",
+    "root": "C:\\ProgramData\\ZcashDarkPoolRecovery\\testnet_observation_v1",
+    "status": "NOT_CONFIGURED",
+    "recovery_key_custody": "SEPARATE_OFFLINE_OPERATOR_CUSTODY_NOT_CONFIGURED"
+  },
+  "os_principals": {
+    "postgres": "ZDPRehearsalPg",
+    "viewer_controller": "ZDPRehearsalView",
+    "web": "ZDPRehearsalWeb",
+    "signer": "ZDPSigner1",
+    "backup_operator": "ZDPRecoveryOperator"
+  },
+  "roles": {
+    "maintenance": {
+      "name": "darkpool_obs_v1_maintenance",
+      "login": false,
+      "grants": []
+    },
+    "owner": { "name": "darkpool_obs_v1_owner", "login": false, "grants": [] },
+    "context": {
+      "name": "darkpool_obs_v1_context",
+      "login": true,
+      "grants": [
+        "CONNECT darkpool_testnet_observation_v1",
+        "USAGE darkpool_watcher",
+        "EXECUTE darkpool_watcher.context()"
+      ]
+    },
+    "issue": { "name": "darkpool_obs_v1_issue", "login": false, "grants": [] },
+    "watch": { "name": "darkpool_obs_v1_watch", "login": false, "grants": [] },
+    "admin": { "name": "darkpool_obs_v1_admin", "login": false, "grants": [] }
+  },
+  "identity": {
+    "postgres_system_id": null,
+    "cluster_marker": null,
+    "directory_identity": null,
+    "account_ref": null,
+    "market_id": null,
+    "vault_context_ref": null
+  },
+  "resource_creation": false,
+  "real_process_launch_enabled": false,
+  "key_import_enabled": false,
+  "issuance_enabled": false,
+  "acceptance_enabled": false,
+  "financial_authorization": "NOT_GRANTED",
+  "production_trust": "UNAVAILABLE",
+  "spending_enabled": false
+}

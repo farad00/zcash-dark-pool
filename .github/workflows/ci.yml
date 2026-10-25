@@ -1,0 +1,40 @@
+name: Scaffold, protocol and wallet spike checks
+on: [push, pull_request]
+permissions:
+  contents: read
+jobs:
+  web-scaffold:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          package-manager-cache: false
+      - run: npm ci --ignore-scripts
+      - run: npm run check:web
+      - run: npm run build:web
+      - run: npm run lint:web
+      - run: npm run format:check:web
+      - run: npm run test:web
+      - run: npm run format:check:protocol
+      - run: npm run lint:protocol
+      - run: npm run test:protocol
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Toolchain
+        run: rustup toolchain install 1.99.0 --profile minimal --component rustfmt --component clippy
+      - name: Format
+        run: cargo +1.99.0 fmt --all -- --check
+      - name: Build
+        run: cargo +1.99.0 build --workspace --locked
+      - name: Clippy
+        run: cargo +1.99.0 clippy --workspace --all-targets --locked -- -D warnings
+      - name: Local tests (no testnet funding or secrets in CI)
+        run: cargo +1.99.0 test --workspace --locked

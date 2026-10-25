@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Individual ticket backup</title>
+    <link rel="stylesheet" href="/vault.css" />
+    <script type="module" src="/backup-ui.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">DARK POOL</span
+        ><span>Local recovery · Testnet</span>
+      </header>
+      <h1>Individual ticket backup</h1>
+      <p><a href="/">Back to My Predictions</a></p>
+      <aside>
+        <h2>Unencrypted bearer credential</h2>
+        <p>
+          Anyone obtaining a usable copy may later exercise that ticket's
+          eligible claim/refund authority. Importing another copy does not
+          revoke previously copied files. The application cannot revoke stolen
+          copies.
+        </p>
+        <p>
+          Keep the file private. Downloads, OneDrive, device backups, messaging
+          apps and screenshots may expose copies. This application does not
+          encrypt the file or put it in cloud storage.
+        </p>
+        <p>
+          Drafts and pending issuance attempts cannot be exported. If server
+          issuance succeeded but the reply or local finalization failed, keep
+          this browser data and retry the same attempt before exporting. Losing
+          storage in that gap has no portable recovery here.
+        </p>
+        <p>
+          Older finalized credentials require one successful same-attempt
+          issuance retry to enable export. A backup restores the claim
+          credential, not the issuance token or payment screen.
+        </p>
+      </aside>
+      <section>
+        <h2>Export one ticket</h2>
+        <p>
+          Only completed issuance with a saved local binding, or a restored V1
+          credential, can be exported. Local checks do not prove funding or
+          claim eligibility.
+        </p>
+        <ul id="backup-records"></ul>
+      </section>
+      <section>
+        <h2>Restore one credential</h2>
+        <label
+          >Choose a ticket backup file
+          <input id="backup-file" type="file" accept=".json,application/json"
+        /></label>
+        <button id="restore" type="button" disabled>
+          Restore selected file
+        </button>
+        <p>
+          Import stays on this browser. It does not contact the server or check
+          payment, acceptance, funding, eligibility or prior claim/refund
+          status.
+        </p>
+        <p id="backup-message" role="status" aria-live="polite">
+          Opening local storage…
+        </p>
+      </section>
+    </main>
+  </body>
+</html>

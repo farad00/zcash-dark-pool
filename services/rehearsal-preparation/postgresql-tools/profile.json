@@ -1,0 +1,20 @@
+{
+  "profile": "POSTGRESQL_CONTROLLED_STAGE_V1",
+  "version": "18.6",
+  "build": "18.6-5",
+  "architecture": "windows-x64",
+  "destination": "C:\\ZcashTools\\PostgreSQL\\18.6-5",
+  "archive_relative": ".tools/postgresql-18.6-windows-x64.zip",
+  "archive_bytes": 384620317,
+  "archive_sha256": "e2246ba91d22345bc3d017586c09ede52d9df180b1eeb480f050445f1cad84e2",
+  "inventory_sha256": "16a59b60f7b18e8eddc8c95a935081a08d8419c760e9838c1a1fd173369ac2db",
+  "inventory_files": 1585,
+  "inventory_directories": 87,
+  "inventory_bytes": 147931704,
+  "checksum_url": "https://get.enterprisedb.com/postgresql/postgresql-18.6-5-windows-x64-binaries.zip.sha256",
+  "checksum_filename": "postgresql-18.6-5-windows-x64-binaries.zip",
+  "provenance_policy": "EDB_HTTPS_CHECKSUM_AND_FIXED_LOCAL_PIN_V1",
+  "signature": "NO_DETACHED_VENDOR_SIGNATURE_VERIFIED",
+  "execution_approval": "NOT_GRANTED",
+  "financial_authorization": "NOT_GRANTED"
+}

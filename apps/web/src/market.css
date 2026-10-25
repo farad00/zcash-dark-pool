@@ -1,0 +1,143 @@
+:root {
+  color-scheme: dark;
+  font-family: system-ui, sans-serif;
+  background: #0c1316;
+  color: #eaf0ed;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 860px;
+  margin: auto;
+  padding: 32px 24px 48px;
+}
+header {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: center;
+  padding-bottom: 32px;
+  border-bottom: 1px solid #293736;
+}
+.brand {
+  font-weight: 750;
+  letter-spacing: 0.16em;
+}
+.network,
+.eyebrow {
+  color: #a5c0b5;
+  font-size: 0.85rem;
+}
+.eyebrow {
+  letter-spacing: 0.06em;
+}
+h1 {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  line-height: 1.2;
+  max-width: 740px;
+}
+h2 {
+  font-size: 1.25rem;
+  margin-top: 0;
+}
+h3 {
+  font-size: 1rem;
+}
+p,
+li,
+dd {
+  line-height: 1.65;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+section,
+aside {
+  margin-top: 28px;
+  padding: 24px;
+  background: #121e22;
+  border: 1px solid #293736;
+  border-radius: 12px;
+}
+.intro {
+  background: transparent;
+  border: 0;
+  padding: 12px 0 0;
+}
+.status {
+  font-size: 0.9rem;
+  color: #b9ccc3;
+}
+.status strong {
+  padding: 5px 10px;
+  margin-left: 8px;
+  border: 1px solid #567667;
+  border-radius: 20px;
+}
+.notice {
+  padding: 16px;
+  border-left: 3px solid #d1ba82;
+  background: #24251e;
+  color: #e9dcbb;
+}
+.definitions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+article {
+  border-top: 2px solid #729f89;
+  padding-top: 6px;
+}
+article p {
+  color: #cedbd5;
+}
+dl {
+  margin: 0;
+  display: grid;
+  gap: 20px;
+}
+dt {
+  font-size: 0.9rem;
+  color: #a5c0b5;
+}
+dd {
+  margin: 4px 0 0;
+}
+ol,
+ul {
+  padding-left: 24px;
+}
+aside {
+  background: #101a19;
+}
+aside p,
+footer {
+  font-size: 0.9rem;
+  color: #b9ccc3;
+}
+footer {
+  margin-top: 32px;
+  line-height: 1.6;
+}
+@media (max-width: 560px) {
+  main {
+    padding: 24px 16px;
+  }
+  section,
+  aside {
+    padding: 20px;
+  }
+  .intro {
+    padding: 0;
+  }
+  .definitions {
+    grid-template-columns: 1fr;
+  }
+  header {
+    flex-wrap: wrap;
+  }
+}

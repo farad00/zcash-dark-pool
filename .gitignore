@@ -1,0 +1,77 @@
+# Local environment and secrets (only the placeholder template is tracked)
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+private/
+signer/
+wallets/
+backups/
+evidence/private/
+# Runtime data may contain viewing authority and private mappings
+.local/
+data/
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite*
+*.wallet
+*.seed
+*.ufvk
+*.usk
+keys.toml
+identity.txt
+*.age
+*.agekey
+*.mnemonic
+*.shares
+*.pczt
+*.tx
+*.log
+logs/
+*.dump
+*.bak
+# Local credential containers, recovery exports and submission staging
+*.clixml
+*.pgpass
+.pgpass
+pgpass.conf
+maintenance.xml
+*.credential.xml
+*.backup
+*.sql.gz
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+*.tsq
+*.tsr
+# Reviewed public RFC 3161 fixture; never a runtime publication receipt.
+!services/publication/test/public-freetsa/sample.tsr
+/evidence/
+/exports/
+/release/
+/releases/
+/submission/staging/
+# Build/tooling artifacts; lockfiles remain tracked
+.tools/
+target/
+node_modules/
+.next/
+out/
+dist/
+coverage/
+*.tsbuildinfo
+# Editors/OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini

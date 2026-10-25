@@ -1,0 +1,2 @@
+param([ValidateSet('start','check','stop')][string]$Action = 'check')
+throw 'HISTORICAL is retired. No SQL or cluster control is permitted through this helper. Use postgres-isolated.ps1 only for a new explicitly authorized TEST/LIVE_EVIDENCE cluster.'

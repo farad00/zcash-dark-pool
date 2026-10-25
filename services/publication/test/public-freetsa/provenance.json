@@ -1,0 +1,20 @@
+{
+  "retrieved_at": "2026-10-21T10:53:15.769Z",
+  "certificates": "https://www.freetsa.org/files/",
+  "crl": "https://www.freetsa.org/crl/root_ca.crl",
+  "existing_sample": "https://usehasp.com/trust/audit-export-sample.json",
+  "file_sha256": {
+    "tsa.crt": "8bfb0305bb64e2571ca507552ef3245cb1c2fee8728e0ff8689225081ea13467",
+    "cacert.pem": "2151b61137ffa86bf664691ba67e7da0b19f98c758e3d228d5d8ebf27e044438",
+    "issuer.crl": "13d85acc0dd6a7ace445822b09dcba0de4236e84d60494dcbe6d7a6c97031935",
+    "sample.tsr": "55f40ca31c031e0799684f51a3a191c67548f8becc93934c51bb85f423850145",
+    "sample-tstinfo.der": "55150cfd73b25f24bb2a0aa3b99ddb7749afe1e2c889493e75283b1939fc7805"
+  },
+  "signer_certificate_sha256": "32e841a95cc1164101ffde41298ef2fc75c1c4372ef095e88a6bbd47dfb191fc",
+  "signer_spki_sha256": "fa02bd555e3e483d62b4e70be6218692068d2b0b0a7525db58dcbf2901cdb072",
+  "anchor_certificate_sha256": "a6379e7cecc05faa3cbf076013d745e327bbbaa38c0b9af22469d4701d18aabc",
+  "root_spki_sha256": "52c54ba340885605314daa1857c8763b94087d05c636092938d4e2d1818e99b5",
+  "trust_status": "UNAVAILABLE",
+  "policy_status": "PROPOSED_NOT_APPROVED",
+  "note": "Public historical evidence only. Sample has no nonce and is not a publication receipt."
+}

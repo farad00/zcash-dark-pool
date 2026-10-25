@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>My Predictions — ticket issuance</title>
+    <link rel="stylesheet" href="/vault.css" />
+    <script type="module" src="/issuance-ui.mjs"></script>
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="brand">DARK POOL</span
+        ><span>Testnet · Ticket issuance and payment request</span>
+      </header>
+      <h1>My Predictions</h1>
+      <nav>
+        <a href="/market">Market rules</a> ·
+        <a href="/backup">Ticket backups</a> ·
+        <a href="/claim">Private claim</a>
+      </nav>
+      <p id="market-context" role="status">
+        Choose the published market. Existing saved attempts keep their original
+        market.
+      </p>
+      <aside>
+        <h2>Keep control of your credential</h2>
+        <p>
+          The ticket secret controls claim/refund capability. Anyone obtaining a
+          finalized credential may control its value.
+        </p>
+        <p>
+          Individual backup and restore are available after issuance and local
+          finalization. <a href="/backup">Manage individual backups</a>. Losing
+          or clearing browser/device storage can cause permanent loss. The
+          server cannot recover your claim secret.
+        </p>
+        <p>
+          Browser storage is not encrypted by this app. Extensions, malware or
+          compromised same-origin scripts can read it.
+        </p>
+      </aside>
+      <section>
+        <h2>1 · Choose YES or NO and issue a ticket</h2>
+        <p>
+          Issuance reserves a server ticket ID and privately binds your choice
+          and intended stake. Payment requests become available only after
+          issuance and local storage complete. Private payment status requires
+          the original issuing browser and a configured status service. The
+          disposable TEST demonstration uses simulated payments only; never fund
+          its requests. Payment status does not authorize a claim.
+        </p>
+        <div id="selection">
+          <label
+            >Published market ID
+            <input id="market" type="text" autocomplete="off"
+          /></label>
+          <label
+            >Private prediction
+            <select id="side">
+              <option value="">Choose a side</option>
+              <option value="YES">YES</option>
+              <option value="NO">NO</option>
+            </select></label
+          >
+          <label
+            >Intended stake, integer zatoshis
+            <input
+              id="amount"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+          /></label>
+          <p>
+            Use the single configured testnet market. Rules must permit
+            issuance. Financial operations remain disabled in the disposable
+            TEST demonstration.
+          </p>
+          <button id="participate" type="button" disabled>
+            Issue prediction
+          </button>
+        </div>
+        <button id="new-prediction" type="button" disabled>
+          New prediction
+        </button>
+        <details>
+          <summary>Advanced: create a draft without issuing</summary>
+          <button id="create" type="button" disabled>Create local draft</button>
+        </details>
+        <p>
+          Issue prediction saves and issues one new ticket. For an existing
+          draft, use its own Issue or Retry button below.
+        </p>
+        <p id="message" role="status" aria-live="polite">
+          Opening local storage…
+        </p>
+        <h2>2 · Current market tickets</h2>
+        <p>
+          Check each ticket privately. CONFIRMED means watcher acceptance, not a
+          completed payout. Export your ticket before leaving this browser.
+        </p>
+        <ul id="records"></ul>
+        <details id="saved-records-context" hidden>
+          <summary>Other saved tickets and unassigned drafts</summary>
+          <p>
+            Preserved from browser storage. These are not automatically part of
+            the current market. Saved attempts retain their original market and
+            choices; never clear them to retry.
+          </p>
+          <ul id="saved-records"></ul>
+        </details>
+      </section>
+      <section
+        id="payment"
+        hidden
+        aria-label="Participant payment request"
+      ></section>
+    </main>
+  </body>
+</html>

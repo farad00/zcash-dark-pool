@@ -1,0 +1,57 @@
+{
+  "name": "zcash-dark-pool",
+  "version": "0.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/web",
+    "packages/protocol"
+  ],
+  "engines": {
+    "node": ">=24.21.0 <25"
+  },
+  "scripts": {
+    "test:phase9": "cargo build --workspace --bins --examples --locked --offline && powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/dev/phase9-tests.ps1 -Action watcher",
+    "check:watcher": "node --check services/watcher/main.mjs && node --check services/watcher/diagnostics.mjs && node --check services/watcher/db.mjs && node --check services/watcher/test/watcher.test.mjs && node --check db/watcher-provision.mjs && node --check db/test/watcher.test.mjs",
+    "provision:watcher": "node db/watcher-provision.mjs",
+    "watcher:private": "node services/watcher/main.mjs",
+    "format:check:watcher": "prettier --check services/watcher/**/*.mjs services/watcher/README.md db/watcher-provision.mjs db/test/watcher.test.mjs db/schema/WATCHER.md docs/PHASE9_*.md",
+    "test:phase8": "cargo build --workspace --bins --examples --locked --offline && npm run build:web && node --test --test-concurrency=1 apps/web/test/payment-request.test.mjs",
+    "format:check:phase8": "prettier --check apps/web/src/payment*.mjs apps/web/test/payment-request.test.mjs apps/web/PAYMENT_REQUEST.md docs/PHASE8_RESULTS.md",
+    "migrate:db": "node db/migrate.mjs",
+    "test:db": "node --test --test-concurrency=1 db/test/schema.test.mjs",
+    "test:phase4": "node --test --test-concurrency=1 apps/web/test/admin.test.mjs",
+    "test:admin-boundary": "node --test apps/web/test/boundary.test.mjs",
+    "test:web": "npm run build:protocol && node --test apps/web/test/public.test.mjs apps/web/test/boundary.test.mjs",
+    "test:phase5": "npm run test:web && npm run test:phase5-db",
+    "test:phase5-db": "node --test --test-concurrency=1 apps/web/test/public-db.test.mjs",
+    "test:phase6": "npm run build:web && node --test --test-concurrency=1 apps/web/test/vault*.test.mjs",
+    "test:backup": "npm run build:web && node --test --test-concurrency=1 apps/web/test/ticket-backup.test.mjs",
+    "dev:vault": "npm run build:web && npm run vault --workspace=@darkpool/web",
+    "test:phase7": "cargo build --workspace --bins --examples --locked --offline && npm run build:web && node --test --test-concurrency=1 apps/web/test/issuance.test.mjs",
+    "dev:issuance": "npm run build:web && npm run issuance --workspace=@darkpool/web",
+    "provision:issuance": "node db/issuance-provision.mjs",
+    "format:check:issuance": "prettier --check apps/web/src/issuance* apps/web/test/issuance.test.mjs db/issuance*.mjs docs/PHASE7_RESULTS.md db/schema/ISSUANCE.md apps/web/ISSUANCE.md",
+    "format:check:vault": "prettier --check apps/web/build-vault.mjs apps/web/src/*vault* apps/web/test/vault*",
+    "provision:public": "node db/public-provision.mjs",
+    "build:web": "npm run build --workspace=@darkpool/web",
+    "lint:web": "npm run lint --workspace=@darkpool/web",
+    "format:check:web": "prettier --check apps/web/src/server.mjs apps/web/src/public*.mjs apps/web/src/market.css apps/web/test/public*.mjs apps/web/eslint.config.mjs",
+    "admin:dev": "node apps/web/src/admin-cli.mjs",
+    "provision:admin": "node db/admin-provision.mjs",
+    "format:check:admin": "prettier --check apps/web/src/admin*.mjs apps/web/test/*.mjs db/admin-provision.mjs",
+    "format:check:db": "prettier --check db/**/*.mjs",
+    "dev:web": "npm run dev --workspace=@darkpool/web",
+    "check:web": "npm run check --workspace=@darkpool/web",
+    "build:protocol": "npm run build --workspace=@darkpool/protocol",
+    "lint:protocol": "npm run lint --workspace=@darkpool/protocol",
+    "format:protocol": "npm run format --workspace=@darkpool/protocol",
+    "format:check:protocol": "npm run format:check --workspace=@darkpool/protocol",
+    "test:protocol": "npm run test --workspace=@darkpool/protocol"
+  },
+  "devDependencies": {
+    "eslint": "10.12.0",
+    "prettier": "3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.71.0"
+  }
+}
