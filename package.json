@@ -46,7 +46,9 @@
     "lint:protocol": "npm run lint --workspace=@darkpool/protocol",
     "format:protocol": "npm run format --workspace=@darkpool/protocol",
     "format:check:protocol": "npm run format:check --workspace=@darkpool/protocol",
-    "test:protocol": "npm run test --workspace=@darkpool/protocol"
+    "test:protocol": "npm run test --workspace=@darkpool/protocol",
+    "build:judge": "npm run build:web && node apps/judge-demo/build.mjs",
+    "test:judge": "node --test apps/judge-demo/engine.test.mjs"
   },
   "devDependencies": {
     "eslint": "10.12.0",

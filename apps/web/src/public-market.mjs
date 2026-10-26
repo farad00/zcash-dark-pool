@@ -95,8 +95,8 @@ const escape = (value) =>
   );
 const shell = (body) => `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zcash dark prediction pool</title><link rel="stylesheet" href="/market.css"></head>
-<body><main><header><span class="brand">DARK POOL</span><span class="network">Zcash · Testnet</span></header>
+<title>VEIL · Private prediction pool</title><link rel="stylesheet" href="/market.css"></head>
+<body><main><header><span class="brand">VEIL</span><span class="network">Zcash · Testnet</span></header>
 ${body}<footer>Read-only MVP preview · No participation controls are available.</footer></main></body></html>`;
 export function renderMarket(rows, { participationHref } = {}) {
   if (participationHref !== undefined && participationHref !== "/") invalid();

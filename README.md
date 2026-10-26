@@ -1,178 +1,112 @@
-# Zcash Dark Pool
+# VEIL
 
-An accountless YES/NO parimutuel prediction pool built around Zcash shielded
-payments and private bearer tickets. Public observers see no live side/stake
-order book. The operator retains the visibility needed to settle the market.
+An accountless binary prediction pool built around Zcash shielded payments and
+private bearer tickets. The public interface shows rules and market status,
+without publishing individual positions, stakes, odds or side totals.
 
-**ZECATHON submission: working synthetic end-to-end product demo.** Integrated
-genuine testnet deposits and payouts are **UNVERIFIED**. The demonstration uses
-synthetic receivers, chain observations and publication evidence. No ZEC is sent;
-signing and broadcast are disabled. Production trust is **UNAVAILABLE** and
-financial authorization is **NOT_GRANTED**.
+**Current release: synthetic demonstration. No funds move.** Integrated genuine
+testnet deposits and payouts remain unverified. Financial authorization is
+`NOT_GRANTED`; production trust is `UNAVAILABLE`. FROST is deferred.
 
-## Demonstrated functionality
+## Try the browser rehearsal
 
-- Browser YES/NO ticket issuance and exact ZIP-321 payment requests.
-- Client-generated bearer credentials, local multi-ticket vault and backup/import.
-- Private payment status backed by the watcher acceptance path in a TEST fixture.
-- Atomic accepted-ledger lock and versioned, blinded Merkle commitment.
-- Authenticated manual YES/NO/VOID resolution and integer-zatoshi settlement.
-- Zero rake, externally subsidized fees, deterministic rounding and full refunds
-  under the frozen no-winner/VOID policies.
-- Private claims, original-secret verification and replay-safe SQL reservations.
-- Immutable **unsent** payout intents. RESERVED/PREPARED does not mean paid.
+**[Open the public browser rehearsal](https://veil-zecathon-2026.jimohsamad2005.chatgpt.site)** · [Two-minute captioned walkthrough](https://veil-zecathon-2026.jimohsamad2005.chatgpt.site/demo-video.html)
 
-The wallet-free UI/lifecycle suite passed **46/46** and focused protocol
-regressions passed **113/113** on 25 October 2026. Retained TAP digests and tested
-source hashes were rechecked during submission preparation. These are synthetic
-tests, not evidence of genuine integrated deposits or payouts.
+![VEIL synthetic browser demo](docs/screenshots/veil-browser-demo.png)
 
-![Actual synthetic operator dashboard](docs/screenshots/synthetic-product-finish-2026-10-25.png)
+The browser rehearsal requires no wallet or command line. Create a private demo
+ticket, simulate its exact deposit and three confirmations before the fixed
+30-second close, then open **Operator rehearsal** to seal and resolve. Return to
+**My tickets** to review an eligible claim and prepare an **unsent** intent.
+Choose VOID for refunds, or NO after funding only YES tickets for no-winner refunds.
 
-## Setup
+This isolated simulation reuses the application’s browser vault, backup format,
+claim commitment, blinded ledger commitment and integer-zatoshi settlement code.
+It has no wallet or database connection and emits no payable Zcash requests.
+Simulated confirmations, oracle evidence and reservations do not prove server
+concurrency, external publication or genuine blockchain payment execution.
 
-The full demonstration is currently supported on **Windows**, using a normal
-operator account, PowerShell 5.1, PostgreSQL **18.6**, and Chrome or Edge. It is a
-local application, not a hosted service. Install Node.js **24.21.0** (the pinned
-version; package engines permit `>=24.21.0 <25`), Rust **1.99.0**, and the Windows
-MSVC C++ build tools. Ensure `node`, `npm.cmd`, `cargo`, `postgres`, `initdb`,
-`pg_ctl` and `psql` resolve to trusted installations in your shell.
+## What is implemented
 
-From the project root, install dependencies and populate the Rust cache:
+- Client-generated 256-bit bearer secrets and ticket-bound claim commitments.
+- Browser-local multi-ticket vault, individual export and validated recovery.
+- Native allocator and exact ZIP-321 integration in the local application.
+- Canonical watcher reconciliation and authenticated private payment status.
+- Atomic SQL lock and retained-blinding ledger commitment in the TEST lifecycle.
+- Rule-bound YES/NO/VOID resolution, exact parimutuel settlement and refunds.
+- Credential-verified claims, replay-safe SQL reservations and unsent payout intents.
+
+The web/API holds no spending authority. A prepared intent is not a paid claim.
+The browser rehearsal and the deeper PostgreSQL-backed TEST demo are distinct.
+
+## Build the browser rehearsal
+
+Use Node.js 24 (`>=24.21.0 <25`) and the committed npm lockfile:
 
 ```powershell
 npm.cmd ci --ignore-scripts
-if ($LASTEXITCODE -ne 0) { throw 'npm install failed' }
-cargo fetch --locked
-if ($LASTEXITCODE -ne 0) { throw 'Rust dependency fetch failed' }
+npm.cmd run build:judge
+node --test apps/judge-demo/engine.test.mjs
 ```
 
-The launch wrapper subsequently builds the required Rust examples **offline**.
-No binaries, dependency caches, database credentials or wallet files are bundled.
-The root `.env.example` is inert; do not populate it with wallet keys or database
-passwords. A fresh-machine installation has not been rehearsed as a public
-distribution; recorded verification uses the configured development machine.
+Serve `apps/judge-demo/dist` through a static HTTP server or HTTPS hosting.
+Opening `index.html` directly as a file is unsupported: secure browser storage
+and module loading are required. No environment file or database is needed.
 
-The demo requires the existing identity-checked **TEST/55433** profile and
-CurrentUser-protected maintenance credential. On a **new machine only**, review
-the create-only target plan first:
+## Local PostgreSQL-backed TEST demo
 
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/dev/postgres-isolated.ps1 -Kind TEST -Plan
-```
-
-After explicit local approval, the existing `-Kind TEST -Create` action initializes
-a fresh TEST cluster and protected credential. It refuses an existing root or
-occupied port; it is not a repair/reset command. This action changes local state
-and is **not** part of the recording or submission-preparation audit. Never run it
-over an existing TEST installation. Do not run the retired `postgres.ps1`.
-
-## Run the synthetic product
-
-With the configured TEST cluster already running:
+The deeper lifecycle is currently supported on Windows with PostgreSQL 18.6,
+Rust 1.99.0/MSVC and a preconfigured identity-checked disposable TEST profile.
+It uses synthetic receivers, chain observations and publication evidence; signing
+and broadcast remain disabled. It is intended for local developer verification.
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/dev/submission-demo.ps1 -Action Demo
 ```
 
-Open **http://127.0.0.1:3002/demo** in a separate private browser window:
+Open `http://127.0.0.1:3002/demo` for the separate operator rehearsal and `/` for
+participation. Never fund its valid-format synthetic payment requests. The market’s
+fixed ten-minute deadline and session cleanup are enforced by the existing launcher.
 
-1. Choose YES/NO and stake, then **Issue prediction**. Use **New prediction** for
-   each additional ticket; three tickets are recommended, one to three supported.
-2. Issue before the displayed immutable close. After close, simulate deposits,
-   check private **CONFIRMED** status, and lock the accepted ledger.
-3. Resolve YES/NO/VOID, select an eligible saved ticket on `/claim`, review the
-   synthetic destination and reserve/prepare the claim privately.
-4. Show **Payment has NOT been sent or confirmed**, then **Stop and clean up**.
-   Wait for `SYNTHETIC_DEMO_CLEANUP_CONFIRMED` in the terminal.
-
-**Never fund these valid-format synthetic requests.** New manual sessions last
-30 minutes; issuance closes ten minutes after its predeclared setup boundary.
-The session timeout never extends or reopens a market. Preserve old saved drafts
-and incomplete attempts; issue new drafts for each new fixture. Within the same
-market, use the saved retry action rather than creating duplicate attempts.
-
-See the [four-minute recording guide](docs/SUBMISSION_DEMO.md). Waiting for the
-unchanged market deadline may be edited out with a visible elapsed-time caption.
-
-## Validate
+Wallet-free validation on the configured TEST installation:
 
 ```powershell
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/dev/submission-demo.ps1 -Action Test
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File scripts/dev/submission-demo.ps1 -Action Regression
 ```
 
-These wrappers use literal wallet-free test lists. `Test` uses new disposable,
-identity-bound databases and roles within TEST/55433; `Regression` runs focused
-calculation/verification suites. No wallet is initialized. Do not substitute a
-recursive test-discovery command or the Phase 7 wallet-fixture suite.
+Do not run broad recursive test discovery: some suites initialize wallet fixtures.
+The inert `.env.example` contains no authority and is not required for the browser demo.
 
-## Architecture
-
-```mermaid
-flowchart LR
-  Browser[Browser: private bearer vault] --> Issuer[Ticket issuer]
-  Issuer --> Allocator[Synthetic receiver fixture]
-  Issuer --> DB[(Private disposable TEST PostgreSQL)]
-  Notes[Simulated shielded notes] --> Watcher[Canonical watcher]
-  Watcher --> DB
-  Browser --> Status[Private payment status]
-  Status --> DB
-  DB --> Lock[Atomic lock + blinded commitment]
-  Lock --> Publication[Isolated synthetic publication verification]
-  Publication --> Oracle[Manual oracle + integer settlement]
-  Oracle --> Claims[Private durable claim]
-  Browser --> Claims
-  Claims --> Intent[Immutable unsent payout intent]
-  Intent --> Stop[STOP: execution disabled]
-```
-
-Native Zcash receiver allocation, viewing/scanning and historical wallet/PCZT
-experiments are separate components. They do not replace genuine transaction
-verification for this product. Activating a receiver, funding it or executing a
-payout requires separate approval and unresolved integration work.
-
-## Privacy, trust and limitations
+## Privacy and trust
 
 Positions, stake sizes and payouts are intended to be hidden from the public
-blockchain and other market participants using shielded payments. The market
-operator has viewing/application access required for settlement. **The synthetic
-demo does not prove blockchain privacy or payment execution.**
+blockchain and other market participants through shielded payments. The market
+operator has the viewing/application access required for settlement. **Synthetic
+demonstrations do not prove blockchain privacy or real payment execution.**
 
-Bearer-secret loss has no identity-based recovery. Local browser storage and
-ticket backups are sensitive and are not encrypted by the app. IP/browser/timing
-metadata, operator visibility and manual-oracle trust remain. A ledger root binds
-a snapshot; it does not prove deposit completeness, operator honesty or solvency.
-FROST is deferred. No production-ready, operator-blind or trustless claim is made.
+The operator sees the private book and supplies a manual oracle. A ledger root
+binds a snapshot; it does not prove completeness, honesty, solvency or oracle truth.
+Browser storage and ticket backups are unencrypted. Bearer-secret loss has no
+identity recovery. Website/IP/browser/timing metadata remains observable.
+No audited-production, trustless, operator-blind or active threshold-signing claim.
 
-Windows account/ACL activation, genuine receiver activation, optional witness/TSA
-and recovery work are frozen for submission. DEV/55435 is status-only; OLD LIVE,
-HISTORICAL and protected wallet material must never be used by this demo.
+Protocol domain strings, storage names and backup identifiers retain their original
+`DARKPOOL` values for compatibility. VEIL is the chosen presentation brand; other
+crypto projects use the name. No uniqueness or affiliation is claimed.
 
-## License and developer
+## Verification
 
-Created by **Jimoh Abdulsamad**, individual developer. Public project name:
-**Zcash Dark Pool**; intended source repository name: **`zcash-dark-pool`**.
+On 26 October 2026 (Africa/Lagos), the updated local wallet-free lifecycle suite
+passed **46/46**, focused protocol regressions passed **113/113**, browser-demo
+checks passed **5/5**, and genuine-deposit boundary units passed **7/7**. These
+are synthetic/unit results; they do not establish genuine integrated payments.
 
-Original project code is licensed under the [MIT License](LICENSE), copyright
-2026 Jimoh Abdulsamad. Third-party dependencies and included public test fixtures
-retain their respective licenses and notices. No additional team members or
-contributors are asserted by this credit.
-See the [third-party source notices](docs/THIRD_PARTY_NOTICES.md).
+## Source and license
 
-## Submission package
+Created by Jimoh Abdulsamad. Original code: [MIT](LICENSE).
+See [architecture](docs/ARCHITECTURE.md), [specification](docs/SPEC.md),
+[threat model](docs/THREAT_MODEL.md) and [third-party notices](docs/THIRD_PARTY_NOTICES.md).
 
-- [Product requirements](docs/PRD.md), [frozen specification](docs/SPEC.md),
-  [architecture](docs/ARCHITECTURE.md), [threat model](docs/THREAT_MODEL.md),
-  [implementation plan](docs/IMPLEMENTATION_PLAN.md), [test plan](docs/TEST_PLAN.md).
-- [Recording guide](docs/SUBMISSION_DEMO.md) and
-  [release audit, materials and next actions](docs/SUBMISSION_READINESS.md).
-- [Exact public-source inventory](submission/PUBLIC_RELEASE_MANIFEST.json).
-
-The inventory describes a curated source snapshot, **not permission to publish
-this working directory or its Git history**. Local evidence, credentials, wallet
-databases, browser backups and historical operational notes are excluded and
-preserved locally. The MIT license and individual developer credit are approved;
-the source destination account/URL, publication and final video remain pending.
-A new local root commit may be prepared only in the separately approved clean
-export. No remote, upload or deployment is authorized; private history is preserved.
+This repository is the source release. A public demo or video is not a ZECATHON
+submission receipt. Submission is complete only after the event platform confirms it.
